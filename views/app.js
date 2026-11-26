@@ -23,7 +23,9 @@
 
   // HUD menu: highlight the current page and point links at the operator versions when logged in.
   function hud(active) {
-    const items = [['scores', ADMIN ? '/admin' : '/', 'Scores'], ['schedule', '/schedule', 'Bracket'], ['speed', ADMIN ? '/admin/speed' : '/speed', 'Speed track']];
+    const items = ADMIN
+      ? [['desk', '/admin', 'Desk'], ['scores', '/', 'Scoreboard'], ['schedule', '/schedule', 'Bracket'], ['speed', '/admin/speed', 'Speed track']]
+      : [['scores', '/', 'Scores'], ['schedule', '/schedule', 'Bracket'], ['speed', '/speed', 'Speed track']];
     const nav = document.querySelector('.menu');
     if (nav) nav.innerHTML = items.map(([k, href, label]) =>
       `<a href="${href}"${k === active ? ' aria-current="page"' : ''}>${icon('cursor')}${label}</a>`).join('');

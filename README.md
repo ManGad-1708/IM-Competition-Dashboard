@@ -4,7 +4,7 @@ Live dashboards for the FM214 Intelligent Machines competition, styled like an 8
 
 | Page | Public (students, projector) | Operator (password) |
 |---|---|---|
-| **Obstacle Course scores** — just played, now playing, up next, leaderboard | `/` | `/admin` |
+| **Obstacle Course** — scoreboard (last results, now playing, leaderboard) / moderator desk (entry, queue, results, ties) | `/` | `/admin` |
 | **Bracket** — every stage from Qualifying to the Finals | `/schedule` | same page |
 | **Speed Track** — laps in 30 s, bonus logger + auto-scheduler | `/speed` | `/admin/speed` |
 | CSV exports | `/api/obstacle.csv`, `/api/export.csv` (speed) | |
@@ -24,7 +24,7 @@ Columns are found by their header text, so reordering columns or adding rows is 
 
 Nothing about the bracket is typed in — it's derived from the scores (`views/tournament.js`):
 
-1. **Qualifying** — the 27 sheet matches. Lower score (T1 + T2 distance) wins. Winners advance, plus the best-scoring non-winner (wildcard) to make 28.
+1. **Qualifying** — the 27 sheet matches. Lower score (T1 distance × T2 distance) wins. Winners advance, plus the best-scoring non-winner (wildcard) to make 28.
 2. **Best of 28** — sorted by qualifying score; seed 1 plays seed 15, 2 plays 16 … 14 plays 28.
 3. **Best of 14** — same, by Best-of-28 score (1 v 8 … 7 v 14). The best winner goes straight to the Semis.
 4. **Quarter-Finals** — the other 6 winners, by Best-of-14 score (1 v 4, 2 v 5, 3 v 6).
@@ -33,11 +33,13 @@ Nothing about the bracket is typed in — it's derived from the scores (`views/t
 
 **Ties** inside a match show as *Tie* and appear under **Needs a decision** on the operator page, where the moderator picks the winner. Seeding ties fall back to lower T2 distance, then team number (placeholder until the staff rule is set — change `seedCompare` in `views/tournament.js`). A **no-show** loses its match. Editing an earlier result re-flows every later round, and the page warns you when that can happen.
 
-## Running the Obstacle Course (operator, `/admin`)
+## Running the Obstacle Course (moderator desk, `/admin`)
 
-- The **Now playing** window is always the next team in match order. Press the clock to stamp the start time, type T1 and T2, press **Enter** (or *Save result*). The next team comes up on its own.
-- **Skip, come back later** puts a team at the back of the queue ("Come back later" list). **Call up** on any row brings a team forward.
-- **Edit** on any leaderboard row reopens that result. **Undo** reverts your last change.
+The desk is a separate page from the public scoreboard: students never see its controls.
+
+- **On course** is always the next team in match order. Press the clock to stamp the start time, type T1, **Enter**, T2, **Enter**. The score (T1 × T2) is saved and the next team comes up with the cursor back in T1.
+- **Skip for now** puts a team in the "Come back later" list. **Call up** in the queue or results brings any team forward.
+- **Edit** on any results row reopens that result. **Undo** reverts your last change.
 - The **stage menu** in the top bar normally says *Auto* (earliest unfinished stage); pick a stage to run it explicitly (e.g. the Final before the 3rd-place play-off).
 - Distances are in cm, with decimals.
 
@@ -48,7 +50,8 @@ Nothing about the bracket is typed in — it's derived from the scores (`views/t
 | `api/index.js` | One Vercel serverless function: pages, login, state APIs, CSV exports, static assets |
 | `lib/sheets.js`, `lib/xlsx.js` | Reads the .xlsx sheets (dependency-free unzip + XML) |
 | `views/tournament.js` | Bracket logic, shared by browser and server (CSV) |
-| `views/scores.html`, `schedule.html`, `speed.html` | The pages; the server switches on operator mode for `/admin` |
+| `views/scores.html`, `admin.html`, `schedule.html`, `speed.html` | Public scoreboard, moderator desk, bracket, speed track |
+| `views/obstacle.js` | Helpers shared by the scoreboard and the desk |
 | `views/pixel.css`, `views/app.js`, `views/fonts/` | Shared 8-bit theme, live-sync client, self-hosted pixel fonts |
 | `test/tournament.test.js` | Simulates a whole tournament: `node test/tournament.test.js` |
 

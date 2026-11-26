@@ -20,7 +20,7 @@ const NS = {
 
 const VIEWS = path.join(__dirname, '..', 'views');
 const read = f => fs.readFileSync(path.join(VIEWS, f), 'utf8');
-const PAGE_FILES = { speed: 'speed.html', scores: 'scores.html', schedule: 'schedule.html' };
+const PAGE_FILES = { speed: 'speed.html', scores: 'scores.html', schedule: 'schedule.html', admin: 'admin.html' };
 const PAGE_CACHE = Object.fromEntries(Object.entries(PAGE_FILES).map(([k, f]) => [k, read(f)]));
 // Locally, re-read pages on every request so edits show up without a restart.
 const PAGES = new Proxy(PAGE_CACHE, { get: (c, k) => (ON_VERCEL ? c[k] : read(PAGE_FILES[k])) });
@@ -187,7 +187,7 @@ module.exports = async (req, res) => {
       const next = route === 'admin' ? '/admin' : '/admin/speed';
       if (!PASSWORD && ON_VERCEL) return send(res, 503, loginPage('Set ADMIN_PASSWORD in Vercel → Settings → Environment Variables, then redeploy.', next));
       if (!isAdmin(req)) return send(res, 200, loginPage('', next));
-      return send(res, 200, asAdmin(route === 'admin' ? PAGES.scores : PAGES.speed));
+      return send(res, 200, asAdmin(route === 'admin' ? PAGES.admin : PAGES.speed));
     }
     if (m === 'POST' && route === 'login') {
       const body = asParams(await readBody(req, 1e4));

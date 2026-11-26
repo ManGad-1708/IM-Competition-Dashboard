@@ -22,13 +22,14 @@
   const byId = Object.fromEntries(STAGES.map(s => [s.id, s]));
 
   const num = v => (typeof v === 'number' && isFinite(v) ? v : null);
-  /** Score of a run: number, Infinity for a forfeit, null when not run yet. */
+  /** Score of a run (T1 × T2): number, Infinity for a forfeit, null when not run yet. */
   function score(run) {
     if (!run) return null;
     if (run.status === 'forfeit') return Infinity;
     if (run.status !== 'done') return null;
     const a = num(run.d1), b = num(run.d2);
-    return a == null || b == null ? null : Math.round((a + b) * 100) / 100;
+    // Score = T1 distance × T2 distance (CLAUDE.md). Lower is better.
+    return a == null || b == null ? null : Math.round(a * b * 100) / 100;
   }
   // Placeholder seeding tie-break (staff rule pending): lower score, then lower T2 distance, then team number.
   function seedCompare(x, y) {

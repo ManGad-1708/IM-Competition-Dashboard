@@ -11,7 +11,7 @@ web
 - **Students** (54 teams of 3–5) watch on their phones and on a projector: who is on now, who is next, the leaderboard and the bracket.
 
 ## Product Purpose
-A live dashboard for the competition day. The Obstacle Course is the main event (score = distance of dropped object to T1 + distance of robot to T2; lower wins), run as a knockout: Qualifying (27 sheet-defined matches, winners + best loser) → Best of 28 → Best of 14 (best winner gets a bye to the Semis) → Quarter-Finals → Semi-Finals → 3rd place play-off and Finals. Match-ups after Qualifying are re-seeded by score each stage (seed i vs seed i + n/2). The optional Speed Track (laps in 30 s) is a separate bonus logger.
+A live dashboard for the competition day. The Obstacle Course is the main event (score = distance of dropped object to T1 × distance of robot to T2; lower wins), run as a knockout: Qualifying (27 sheet-defined matches, winners + best loser) → Best of 28 → Best of 14 (best winner gets a bye to the Semis) → Quarter-Finals → Semi-Finals → 3rd place play-off and Finals. Match-ups after Qualifying are re-seeded by score each stage (seed i vs seed i + n/2). The optional Speed Track (laps in 30 s) is a separate bonus logger.
 
 Success: the moderator never does bracket maths by hand, and every screen agrees within seconds.
 

@@ -7,9 +7,8 @@ in the competition's 2 parts:
     - Find the line on the course, and follow the line to get to point T2 and
       park.
     - Distance of dropped object to T1 and distance of robot from T2 is
-      measured, and the score is sum of these two distances. The lower the
-      score, the
-      better.
+      measured, and the score is product of these two distances. The lower the
+      score, the better.
 2. (Optional) Speed Track
     - Number of laps in 30 seconds around a circular track
 

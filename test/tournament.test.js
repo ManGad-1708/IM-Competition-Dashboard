@@ -1,6 +1,7 @@
 // Simulates a whole tournament with random scores: node test/tournament.test.js
 const assert = require('assert');
 const T = require('../views/tournament.js');
+assert.strictEqual(T.score({ status: 'done', d1: 2.5, d2: 4 }), 10, 'score is T1 × T2');
 const sheets = require('../lib/sheets').loadSheets();
 let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 const data = { runs: {}, picks: {} };
@@ -30,7 +31,7 @@ b = playStage('R14'); assert.ok(b.S.R14.bye); assert.strictEqual(b.S.QF.matches.
 assert.ok(!b.S.QF.entrants.includes(b.S.R14.bye));
 b = playStage('QF'); assert.strictEqual(b.S.SF.matches.length, 2); assert.ok(b.S.SF.entrants.includes(b.S.R14.bye));
 b = playStage('SF'); assert.strictEqual(b.S.F.status, 'live'); assert.strictEqual(b.S.P3.status, 'live');
-// a tie in the final needs a moderator pick
+// a tie in the final needs a moderator pick (score = T1 × T2: 1×2 = 2×1)
 const f = b.S.F.matches[0];
 data.runs.F = { [f.a]: { status: 'done', d1: 1, d2: 2, t: ++t }, [f.b]: { status: 'done', d1: 2, d2: 1, t: ++t } };
 b = T.compute(sheets, data); assert.ok(b.S.F.matches[0].tie); assert.strictEqual(b.S.F.status, 'live');
@@ -38,8 +39,9 @@ data.picks[b.S.F.matches[0].key] = f.b;
 b = playStage('P3');
 assert.strictEqual(b.podium.first, f.b); assert.strictEqual(b.podium.second, f.a); assert.ok(b.podium.third);
 // forfeit loses
-const q0 = b.S.Q.matches[0];
-data.runs.Q[q0.a] = { status: 'forfeit', t: ++t };
-b = T.compute(sheets, data); assert.strictEqual(b.S.Q.matches[0].winner, q0.b);
+const q0 = b.S.Q.matches.find(m => b.S.R28.entrants.includes(m.winner) && m.winner !== b.wildcard);
+const loser = q0.loser;
+data.runs.Q[q0.winner] = { status: 'forfeit', t: ++t };
+b = T.compute(sheets, data); assert.strictEqual(b.S.Q.matches.find(m => m.key === q0.key).winner, loser);
 assert.strictEqual(b.podium, null, 'editing qualifying re-flows later rounds');
 console.log('ok');
