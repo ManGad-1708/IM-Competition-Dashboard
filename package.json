@@ -1,11 +1,12 @@
 {
-  "name": "speed-comp",
-  "version": "1.1.0",
-  "description": "Live Speed Comp dashboard on Vercel: public display, password-protected operator page, live updates.",
+  "name": "im-competition-dashboard",
+  "version": "2.0.0",
+  "description": "FM214 IM competition dashboards on Vercel: obstacle course scores + bracket from the xlsx sheets, speed track logger.",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "local": "node local.js"
+    "local": "node local.js",
+    "test": "node test/tournament.test.js"
   },
   "engines": {
     "node": ">=18"

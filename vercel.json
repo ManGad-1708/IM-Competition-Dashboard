@@ -1,15 +1,22 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "api/index.js": { "includeFiles": "views/**", "maxDuration": 10 }
+    "api/index.js": { "includeFiles": "{views,sheets,lib}/**", "maxDuration": 10 }
   },
   "rewrites": [
-    { "source": "/", "destination": "/api/index?r=page" },
+    { "source": "/", "destination": "/api/index?r=scores" },
     { "source": "/admin", "destination": "/api/index?r=admin" },
+    { "source": "/schedule", "destination": "/api/index?r=schedule" },
+    { "source": "/speed", "destination": "/api/index?r=speed" },
+    { "source": "/admin/speed", "destination": "/api/index?r=admin-speed" },
     { "source": "/login", "destination": "/api/index?r=login" },
     { "source": "/logout", "destination": "/api/index?r=logout" },
     { "source": "/healthz", "destination": "/api/index?r=health" },
     { "source": "/api/state", "destination": "/api/index?r=state" },
-    { "source": "/api/export.csv", "destination": "/api/index?r=export" }
+    { "source": "/api/export.csv", "destination": "/api/index?r=export" },
+    { "source": "/api/obstacle", "destination": "/api/index?r=obstacle" },
+    { "source": "/api/obstacle.csv", "destination": "/api/index?r=obstacle-export" },
+    { "source": "/api/sheets", "destination": "/api/index?r=sheets" },
+    { "source": "/assets/:file*", "destination": "/api/index?r=asset&f=:file*" }
   ]
 }

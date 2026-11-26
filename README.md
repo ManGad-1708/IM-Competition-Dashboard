@@ -1,29 +1,61 @@
-# IM Competition Dashboard: Speed Comp
+# IM Competition Dashboard (FM214)
 
-A live scoreboard for the Speed Competition. There's a public display for the projector and for teams, and a password-protected operator page where the scoring team enters teams and laps and runs the auto-scheduler.
+Live dashboards for the FM214 Intelligent Machines competition, styled like an 8-bit console RPG.
 
-- **Public display:** https://speed-comp.vercel.app (read-only)
-- **Operator page:** https://speed-comp.vercel.app/admin (needs the operator password)
-- **CSV export:** use the "Download CSV" button on the operator page, or open `/api/export.csv`
+| Page | Public (students, projector) | Operator (password) |
+|---|---|---|
+| **Obstacle Course scores** — just played, now playing, up next, leaderboard | `/` | `/admin` |
+| **Bracket** — every stage from Qualifying to the Finals | `/schedule` | same page |
+| **Speed Track** — laps in 30 s, bonus logger + auto-scheduler | `/speed` | `/admin/speed` |
+| CSV exports | `/api/obstacle.csv`, `/api/export.csv` (speed) | |
 
-A change made on the operator page shows up on every open screen within about 2 seconds. Scores are saved in a database, so refreshing a page, closing a laptop or redeploying the app loses nothing.
+Every open screen picks up changes within about 2 seconds. Scores live in Upstash Redis, so refreshing, closing a laptop or redeploying loses nothing.
 
-It runs on free plans only: Vercel Hobby, with Upstash Redis for storage. It has no npm dependencies.
+## The sheets drive the app
 
----
+`sheets/Teams.xlsx` and `sheets/QualifyingPlayoffs.xlsx` are read directly by the app (no conversion step):
+
+- **Teams.xlsx** — a header row with `Group No`, `Group Members Names`, `Group Name`, and the M/B letter in the next column. Fill in a team's *Group Name* and it shows up everywhere; empty names show as "Team 07".
+- **QualifyingPlayoffs.xlsx** — a header row with `Match No` and two team-number columns (`M Group No`, `B Group No`). Each row is one qualifying match.
+
+Columns are found by their header text, so reordering columns or adding rows is fine. After editing a sheet, **commit and push (or redeploy)** — the new deploy reads the new sheets and every open screen reloads them automatically. Locally (`node local.js`) changes are picked up on save, no restart. Problems (a team in a match but not in the team list, a team in two matches, …) are listed under **Sheet check** on the operator page.
+
+## How the tournament is computed
+
+Nothing about the bracket is typed in — it's derived from the scores (`views/tournament.js`):
+
+1. **Qualifying** — the 27 sheet matches. Lower score (T1 + T2 distance) wins. Winners advance, plus the best-scoring non-winner (wildcard) to make 28.
+2. **Best of 28** — sorted by qualifying score; seed 1 plays seed 15, 2 plays 16 … 14 plays 28.
+3. **Best of 14** — same, by Best-of-28 score (1 v 8 … 7 v 14). The best winner goes straight to the Semis.
+4. **Quarter-Finals** — the other 6 winners, by Best-of-14 score (1 v 4, 2 v 5, 3 v 6).
+5. **Semi-Finals** — 3 QF winners (QF score) + the bye team (its Best-of-14 score): 1 v 3, 2 v 4.
+6. **3rd place play-off** (SF losers) and **Finals** (SF winners) can run in either order.
+
+**Ties** inside a match show as *Tie* and appear under **Needs a decision** on the operator page, where the moderator picks the winner. Seeding ties fall back to lower T2 distance, then team number (placeholder until the staff rule is set — change `seedCompare` in `views/tournament.js`). A **no-show** loses its match. Editing an earlier result re-flows every later round, and the page warns you when that can happen.
+
+## Running the Obstacle Course (operator, `/admin`)
+
+- The **Now playing** window is always the next team in match order. Press the clock to stamp the start time, type T1 and T2, press **Enter** (or *Save result*). The next team comes up on its own.
+- **Skip, come back later** puts a team at the back of the queue ("Come back later" list). **Call up** on any row brings a team forward.
+- **Edit** on any leaderboard row reopens that result. **Undo** reverts your last change.
+- The **stage menu** in the top bar normally says *Auto* (earliest unfinished stage); pick a stage to run it explicitly (e.g. the Final before the 3rd-place play-off).
+- Distances are in cm, with decimals.
 
 ## How it works
 
 | Path | What it is |
 |---|---|
-| `api/index.js` | One Vercel serverless function that handles every route: the pages, the login, the state API and the CSV export |
-| `views/index.html` | The dashboard page. The same file is used for the public view and the operator view; the server switches on operator mode |
-| `vercel.json` | Rewrites `/`, `/admin`, `/login`, `/logout`, `/healthz`, `/api/state` and `/api/export.csv` to the function |
-| `local.js` | A small Node server for testing on your own machine |
+| `api/index.js` | One Vercel serverless function: pages, login, state APIs, CSV exports, static assets |
+| `lib/sheets.js`, `lib/xlsx.js` | Reads the .xlsx sheets (dependency-free unzip + XML) |
+| `views/tournament.js` | Bracket logic, shared by browser and server (CSV) |
+| `views/scores.html`, `schedule.html`, `speed.html` | The pages; the server switches on operator mode for `/admin` |
+| `views/pixel.css`, `views/app.js`, `views/fonts/` | Shared 8-bit theme, live-sync client, self-hosted pixel fonts |
+| `test/tournament.test.js` | Simulates a whole tournament: `node test/tournament.test.js` |
 
-- **Storage:** Upstash Redis, through its REST API using `fetch`. Every save is an atomic compare-and-set on a revision number, so two operators can't silently overwrite each other. The second one gets the latest version and a warning instead.
-- **Live updates:** every screen fetches `/api/state` every 1.5 seconds, and pauses while its tab is hidden. Vercel's CDN caches that response for 1 second, so any number of screens costs only about one database read per second. That keeps the app comfortably inside the free tier.
-- **Login:** a single operator password, set in the `ADMIN_PASSWORD` environment variable. Logging in sets an HttpOnly session cookie that lasts 30 days. Only a logged-in operator can save.
+- **Storage:** Upstash Redis via its REST API. Obstacle Course and Speed Track are separate keys, each saved with an atomic compare-and-set on a revision number, so two operators can't silently overwrite each other.
+- **Live updates:** screens poll every 1.5 s (paused in hidden tabs); responses are cached at Vercel's edge for 1 s.
+- **Login:** one operator password in `ADMIN_PASSWORD`; an HttpOnly cookie for 30 days.
+- No npm dependencies.
 
 ## Environment variables
 
@@ -34,42 +66,23 @@ It runs on free plans only: Vercel Hobby, with Upstash Redis for storage. It has
 
 Never commit these. `.env*` files and `.vercel/` are git-ignored.
 
-## Deploy your own copy
+## Deploy
 
 1. Import this repo in Vercel (**Add New → Project**). No build settings are needed.
-2. Under the project's **Storage** tab, add **Upstash for Redis** on the free plan and connect it to the project.
+2. Under **Storage**, add **Upstash for Redis** (free plan) and connect it.
 3. Under **Settings → Environment Variables**, add `ADMIN_PASSWORD`.
-4. Redeploy. Use the production domain (`<project>.vercel.app`). Preview and deployment URLs sit behind Vercel's sign-in by default.
-
-Or deploy from the CLI:
-
-```
-vercel link
-vercel integration add upstash/upstash-kv --billing-plan free
-vercel env add ADMIN_PASSWORD production
-vercel deploy --prod
-```
+4. Redeploy and use the production domain (`<project>.vercel.app`).
 
 ## Run it locally
 
-You need Node 18 or newer.
+Node 18 or newer:
 
 ```
 ADMIN_PASSWORD=test node local.js
 ```
 
-Then open http://localhost:3000 and http://localhost:3000/admin. Without the Redis variables, data is kept in memory and is lost when you stop the server.
+Open http://localhost:3000. Without the Redis variables, data is kept in memory and lost when you stop the server; without `ADMIN_PASSWORD`, the operator pages open without a login (local only).
 
----
+## Speed Track event day
 
-## Event day (28 Nov: team list at 10:00, competitions from 12:00)
-
-1. **10:00: paste the Speed Comp sign-ups.** Open **Import, save and reset**, paste one team per line as `Team no., Team name` (no times yet), and click **Import rows**.
-2. **10:00–10:45: collect the other competitions' run times.** Ask each competition lead for lines in the form `Team no., Team name, Competition, Start time, Minutes`. Use the same team numbers in every competition, because that's how teams are matched.
-3. **Around 10:45: auto-schedule.** In **Auto-schedule around other competitions**, paste all the other runs. Set the first slot to `12:00`, set the minutes per slot to the run length plus changeover time, and set the time the last slot must end by. Click **Build schedule** and check the colours: green is fine, yellow is under your warning gap, and red is a clash. When you're happy, click **Apply to Speed Comp**.
-4. **Around 11:00: publish.** Download the CSV and share the public link. From then on, don't rebuild the schedule, because that would move everyone. Add late teams by hand in a free slot.
-5. **From 12:00: run it.** Mark the team that's running as **On track**, and enter laps (one decimal place) as each run finishes.
-
-To work out how many slots you need, multiply the number of teams by the minutes per slot. For example, 30 teams × 8 min = 4 hours, so 12:00 to 16:00.
-
-**Before the event:** open `/admin` on a laptop and the public link on a phone. Add a test team, check that it appears on the phone, download the CSV once, then clear everything with **Import, save and reset → Reset all**.
+The Speed Track page (`/admin/speed`) keeps its import, auto-scheduler and CSV tools: paste sign-ups under **Import, save and reset**, paste other competitions' run times into **Auto-schedule around other competitions**, build and apply, then mark **On track** and enter laps as teams run.

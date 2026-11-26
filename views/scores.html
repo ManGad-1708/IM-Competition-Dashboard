@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Obstacle Course — IM Competition</title>
+<link rel="preload" href="/assets/fonts/press-start-2p-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/dotgothic16-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/pixel.css">
+<style>
+/* ----- Just played strip ----- */
+.log{padding:10px 14px}
+.log .win-title{margin-bottom:8px}
+.log ol{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.rc{display:grid;grid-template-columns:110px auto minmax(0,1fr) auto 70px 84px;gap:12px;align-items:center;padding:6px 8px;background:var(--well)}
+.rc .stage{font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.rc .px{font-size:14px}
+.rc b{font-size:19px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rc .det{color:var(--ink-2);font-size:16px;white-space:nowrap}
+.rc .sc{font:400 16px/1 var(--px);text-align:right}
+.rc .res{justify-self:end}
+.rc.pop{background:var(--gold-tint)}
+.rc.pop .sc{animation:rise .9s steps(6) both}
+.log .none{color:var(--ink-2);font-size:16px;padding:6px 0;margin:0}
+@keyframes rise{0%{transform:translateY(12px);color:var(--p1)}60%{transform:translateY(-4px);color:var(--p1)}100%{transform:none}}
+
+/* ----- Stage: now playing + next ----- */
+.stage-row{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:16px;align-items:start}
+.now{padding:14px 18px 18px}
+.now .win-title{font-size:16px}
+.faceoff{display:grid;grid-template-columns:minmax(0,1.5fr) auto minmax(0,1fr);gap:12px;align-items:stretch;margin:4px 0 4px}
+.fighter{display:grid;gap:6px;align-content:start;padding:10px 12px}
+.fighter.p1{background:var(--p1-tint)}
+.fighter.p2{background:var(--p2-tint)}
+.fighter .who{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.fighter .cursor{height:26px}
+.fighter.p2 .now-no{color:var(--p2);font-size:24px}
+.fighter.p2 .now-name{font-size:22px}
+.fighter .beat{font-size:16px;color:var(--ink-2)}
+.fighter .beat .px{font-size:16px;color:var(--p2);margin-left:6px}
+.vsbig{align-self:center;font:400 20px/1 var(--px);padding:8px 8px;background:var(--ink);color:#fff}
+.announce{margin:10px 0 0;font-size:17px;color:var(--ink)}
+.now-no{font:400 40px/1 var(--px);color:var(--p1);flex:none}
+.now-name{font:700 34px/1.1 var(--ui);overflow-wrap:anywhere}
+.now-mem{font-size:17px;margin-top:4px;color:var(--ink-2)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+.stat{display:grid;gap:4px;align-content:start}
+.stat .lbl{font:600 14px/1.2 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.stat .val{font:400 24px/1.3 var(--px);padding:10px 0 4px}
+.stat .val small{font:600 15px var(--ui);color:var(--ink-2);margin-left:4px}
+.stat.score .val{color:var(--p1)}
+.stat .row{display:flex;gap:6px;align-items:stretch}
+.stat .row .inp{margin-top:0}
+.stat .row .btn{min-height:48px}
+.stat .inp{margin-top:0}
+.stat input[type=time]::-webkit-calendar-picker-indicator{display:none}
+.acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;align-items:center}
+.acts .spacer{flex:1}
+.clear{display:grid;place-items:center;text-align:center;gap:10px;padding:18px 8px 10px}
+.clear .px{font-size:24px;color:var(--hp)}
+.clear .big{font-size:20px}
+.champ .px{color:var(--gold-ink)}
+.champ .ico{height:48px;color:var(--gold)}
+.callout{margin-top:12px;padding:8px 10px;background:var(--gold-tint);color:var(--gold-ink);font-size:16px}
+
+.next{padding:12px 14px}
+.qlist{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.qi{display:grid;grid-template-columns:14px auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 6px;background:var(--well)}
+.qi .ico{color:var(--p1);height:14px}
+.qi .px{font-size:14px}
+.qi b{display:block;font-size:19px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qi small{display:block;color:var(--ink-2);font-size:15px}
+.qh{margin:14px 0 6px;font:600 14px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);display:flex;align-items:center;gap:8px}
+.qh .ico{height:12px}
+.qempty{color:var(--ink-2);font-size:16px;padding:6px 0}
+.progress{margin-top:14px;display:grid;gap:6px}
+.bar{height:16px;border:3px solid var(--ink);background:var(--well);position:relative}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--hp)}
+.bar i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 75%,rgba(255,255,255,.35) 0) 0 0/8px 100%}
+
+/* ----- Decisions (operator) ----- */
+.decide ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.decide li{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--gold-tint)}
+.decide li .acts{margin:0}
+.warn-list li{background:var(--well)}
+
+/* ----- Leaderboard ----- */
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs .btn{min-height:38px;font-size:14px}
+.board table{width:100%;border-collapse:separate;border-spacing:0 4px;font-variant-numeric:tabular-nums}
+.board th{font:600 14px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);text-align:left;padding:4px 8px}
+.board td{padding:8px;background:var(--well);vertical-align:middle;font-size:18px}
+.board tr.me td{background:var(--p2-tint)}
+.board tr.gold td{background:var(--gold-tint)}
+.board .r{text-align:right}
+.board .rank .px{font-size:14px}
+.board .team .px{font-size:12px;color:var(--ink-2);margin-right:8px}
+.board .team b{font-weight:700}
+.board .team small{display:block;color:var(--ink-2);font-size:15px}
+.board .scorec{font:400 16px/1 var(--px)}
+.board .team small.m-only{display:none}
+.board .act{width:1%;white-space:nowrap}
+.board .m-act{display:none}
+.board-foot{display:flex;flex-wrap:wrap;gap:8px 16px;color:var(--ink-2);font-size:15px;margin-top:8px}
+.board-empty{padding:20px 8px;color:var(--ink-2)}
+
+@media (max-width:1000px){.stage-row{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:720px){
+  .log{padding:6px 8px}
+  .log .win-title{margin-bottom:6px;padding-bottom:6px}
+  .rc{padding:4px 6px}
+  .now .win-title{margin-bottom:8px}
+  .rc{grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"no nm sc" "st det res";gap:2px 10px}
+  .rc .px{grid-area:no}.rc b{grid-area:nm}.rc .sc{grid-area:sc}.rc .stage{grid-area:st;font-size:14px}.rc .det{grid-area:det;font-size:15px}.rc .res{grid-area:res}
+  .now{padding:10px 10px 14px}
+  .faceoff{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px}
+  .fighter{padding:8px}
+  .fighter .now-no,.fighter.p2 .now-no{font-size:18px}
+  .fighter .now-name,.fighter.p2 .now-name{font-size:19px}
+  .fighter .now-mem{font-size:14px}
+  .fighter .cursor{height:16px}
+  .fighter .beat,.fighter .beat .px{font-size:14px}
+  .vsbig{font-size:10px;padding:5px}
+  .announce{display:none}
+  .is-admin .fighter .now-mem{display:none}
+  .is-admin .rc:nth-child(n+3){display:none}
+  .is-admin .board .team small.m-only{display:inline;margin-right:8px}
+  .is-admin .board .m-act{margin-top:4px}
+  .now-no{font-size:26px}
+  .now-name{font-size:26px}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat .val{font-size:20px}
+  .acts .btn{flex:1 1 auto}
+  .board .d-only{display:none}
+  .board .team small.m-only{display:block}
+  .board .act{display:none}
+  .board .m-act{display:inline-flex;margin-top:6px}
+  .board td{padding:8px 6px;font-size:17px}
+  .board th{padding:4px 6px}
+  .board .scorec{font-size:14px}
+}
+</style>
+</head>
+<body>
+<script>window.__ADMIN__=/*__ADMIN__*/false</script>
+<header class="hud">
+  <a class="logo" href="/"><b>IM Competition</b><span>FM214 · Obstacle course</span></a>
+  <nav class="menu win flat" aria-label="Dashboards"></nav>
+  <div class="status">
+    <span class="live" role="status"><i></i><span>Live</span></span>
+    <div class="admin-bar" id="adminBar" hidden>
+      <label class="sr" for="focusSel">Stage being run</label>
+      <select id="focusSel" class="inp" style="min-height:40px;width:auto;font-size:16px;margin:0"></select>
+      <button type="button" class="btn sm" id="undo">Undo</button>
+      <a class="btn sm" href="/api/obstacle.csv">CSV</a>
+      <form method="post" action="/logout" style="margin:0"><button class="btn sm" type="submit">Log out</button></form>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+  <section class="win flat log" id="recent" aria-label="Last battles"></section>
+  <div class="stage-row">
+    <section class="win p1 now" id="now" aria-live="polite"></section>
+    <section class="win next" id="next"></section>
+  </div>
+  <section class="win gold decide" id="decide" hidden></section>
+  <section class="win board" id="board"></section>
+</main>
+<div class="toast" id="toast" hidden></div>
+
+<script src="/assets/tournament.js"></script>
+<script src="/assets/app.js"></script>
+<script>
+(() => {
+const { $, esc, icon, fmt, hhmm, ADMIN } = UI;
+const T = Tournament;
+UI.hud('scores');
+if (ADMIN) { document.body.classList.add('is-admin'); $('adminBar').hidden = false; document.title = 'Operator · ' + document.title; }
+
+const blank = () => ({ runs: {}, picks: {}, current: null, focus: null });
+let B = null, teams = {}, sheets = { teams: [], qualifying: [], sides: [], warnings: [] };
+let boardStage = null, lastRecent = null, drafts = {};
+const store = UI.createStore({
+  url: '/api/obstacle', blank,
+  onSheets: s => { sheets = s; teams = Object.fromEntries(s.teams.map(t => [t.no, t])); },
+  onChange: () => render(),
+  onConflict: () => toast('Another operator saved at the same time — showing the latest. Check your last change.', 'bad'),
+  onAuth: () => toast('Your login expired — reload and log in again. The last change was not saved.', 'bad'),
+});
+const D = () => store.data;
+
+// ---------- helpers ----------
+const pad = n => String(n).padStart(2, '0');
+const tag = t => '#' + pad(t);
+const tname = t => (teams[t] && teams[t].name) || 'Team ' + pad(t);
+const members = t => (teams[t] && teams[t].members) || '';
+const runOf = (sid, t) => ((D().runs || {})[sid] || {})[t];
+const stageName = sid => T.byId[sid].name;
+function toast(text, kind) {
+  const el = $('toast');
+  el.innerHTML = `<div class="win flat"><p class="msg ${kind || ''}" style="margin:0">${esc(text)}</p></div>`;
+  el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 4200);
+}
+function sideTag(st, m, team) {
+  if (!m) return '';
+  const first = m.a === team;
+  if (st.id === 'Q') return ''; // M/B groups are for the staff only
+  const seed = first ? m.seedA : m.seedB;
+  return seed ? `<span class="tag ${first ? 'red' : 'blue'}">Seed ${seed}</span>` : '';
+}
+function resultTag(st, team) {
+  const r = runOf(st.id, team);
+  const { res } = T.teamResult(st, team);
+  if (st.id === 'Q' && B.wildcard === team) return '<span class="tag green">Wildcard</span>';
+  if (res === 'win') return '<span class="tag gold">Win</span>';
+  if (res === 'bye') return '<span class="tag gold">Bye</span>';
+  if (res === 'tie') return '<span class="tag red">Tie</span>';
+  if (r && r.status === 'forfeit') return '<span class="tag red">No-show</span>';
+  if (res === 'lose') return '<span class="tag ghost">Out</span>';
+  if (B.current && B.current.stage === st.id && B.current.team === team) return '<span class="tag blue">On now</span>';
+  if (r && r.status === 'done') return '<span class="tag ghost">Waiting</span>';
+  if (r && r.status === 'skip') return '<span class="tag ghost">Later</span>';
+  return '';
+}
+const scoreText = r => !r ? '--' : r.status === 'forfeit' ? 'DNS' : r.status === 'done' ? fmt(T.score(r)) : '--';
+
+// ---------- actions (operator) ----------
+function mutate(fn) { store.snap(); fn(D()); store.save(); render(); }
+function setRun(sid, team, patch) {
+  mutate(d => {
+    d.runs = d.runs || {}; d.runs[sid] = d.runs[sid] || {};
+    if (patch === null) delete d.runs[sid][team];
+    else d.runs[sid][team] = Object.assign({}, d.runs[sid][team], patch);
+  });
+}
+function callUp(sid, team) { mutate(d => { d.current = { stage: sid, team }; }); window.scrollTo({ top: $('now').offsetTop - 12, behavior: 'smooth' }); }
+const unpin = () => mutate(d => { d.current = null; });
+function confirmTap(btn, label) {
+  if (btn.dataset.sure === '1') return true;
+  btn.dataset.sure = '1'; const old = btn.textContent; btn.textContent = label;
+  setTimeout(() => { if (btn.isConnected) { btn.dataset.sure = ''; btn.textContent = old; } }, 3000);
+  return false;
+}
+const parseNum = v => { v = String(v).trim().replace(',', '.'); if (v === '') return null; const n = +v; return isFinite(n) && n >= 0 ? n : NaN; };
+
+// ---------- render ----------
+function render() {
+  B = T.compute(sheets, D());
+  renderRecent(); renderNow(); renderNext(); renderDecide(); renderBoard();
+  if (ADMIN) renderFocus();
+}
+
+function renderRecent() {
+  const list = B.recent.slice(0, 3);
+  const head = list[0] ? list[0].stage + ':' + list[0].team + ':' + list[0].run.t : '';
+  const isNew = lastRecent !== null && head && head !== lastRecent;
+  lastRecent = head;
+  const rows = list.map((x, i) => {
+    const st = B.S[x.stage];
+    const m = T.teamResult(st, x.team).m;
+    return `<li class="rc${i === 0 && isNew ? ' pop' : ''}">
+      <span class="stage">${esc(T.byId[x.stage].short)} · M${esc(m ? m.no : '')}</span><span class="px">${tag(x.team)}</span><b>${esc(tname(x.team))}</b>
+      <span class="det">${x.run.status === 'forfeit' ? 'Did not start' : `T1 ${fmt(x.run.d1)} + T2 ${fmt(x.run.d2)}`}</span><span class="sc">${scoreText(x.run)}</span><span class="res">${resultTag(st, x.team)}</span></li>`;
+  });
+  $('recent').innerHTML = `<h2 class="win-title"><span>Last battles</span><span class="sub">Newest first</span></h2>`
+    + (rows.length ? `<ol>${rows.join('')}</ol>` : '<p class="none">No runs yet. Results land here as each team finishes.</p>');
+}
+
+function draftFor(key, run) {
+  if (!drafts[key]) drafts[key] = { start: (run && run.start) || '', d1: run && run.d1 != null ? String(run.d1) : '', d2: run && run.d2 != null ? String(run.d2) : '' };
+  return drafts[key];
+}
+
+function renderNow() {
+  const el = $('now');
+  // Don't wipe what the operator is typing when a poll lands.
+  const key = B.current ? B.current.stage + ':' + B.current.team : 'none';
+  if (ADMIN && el.contains(document.activeElement) && el.dataset.key === key && document.activeElement.matches('input')) return;
+  el.dataset.key = key;
+  const active = B.active;
+  if (!B.current) {
+    if (B.podium) {
+      el.innerHTML = `<h2 class="win-title"><span>Champion</span><span class="sub">Finals</span></h2>
+        <div class="clear champ">${icon('trophy')}<div class="px">${tag(B.podium.first)}</div><div class="big">${esc(tname(B.podium.first))}</div>
+        <div class="dim">2nd ${tag(B.podium.second)} ${esc(tname(B.podium.second))}${B.podium.third ? ` · 3rd ${tag(B.podium.third)} ${esc(tname(B.podium.third))}` : ''}</div></div>`;
+      return;
+    }
+    const ties = active.ties ? active.ties.length : 0;
+    el.innerHTML = `<h2 class="win-title"><span>${esc(active.name)}</span><span class="sub">${active.status === 'locked' ? 'Waiting for the sheets' : 'Stage clear'}</span></h2>
+      <div class="clear"><div class="px">${active.status === 'locked' ? 'Get ready' : 'Stage clear!'}</div>
+      <div class="dim">${active.status === 'locked' ? 'No qualifying matches found in sheets/QualifyingPlayoffs.xlsx.' : ties || active.wildcardTie ? `Waiting for the moderator to decide ${ties + (active.wildcardTie ? 1 : 0)} tie${ties + (active.wildcardTie ? 1 : 0) > 1 ? 's' : ''}.` : 'Every team in this stage has run.'}</div></div>`;
+    return;
+  }
+  const { stage: sid, team, pinned } = B.current;
+  const st = B.S[sid];
+  const run = runOf(sid, team);
+  const { m, opp } = T.teamResult(st, team);
+  const oppRun = opp ? runOf(sid, opp) : null;
+  const done = run && (run.status === 'done' || run.status === 'forfeit');
+  const later = T.STAGES.slice(T.STAGES.findIndex(s => s.id === sid) + 1).some(s => B.S[s.id].status !== 'locked');
+  const beat = oppRun && oppRun.status === 'done' ? `Score to beat<span class="px">${fmt(T.score(oppRun))}</span>` : oppRun && oppRun.status === 'forfeit' ? 'Did not start' : 'Not run yet';
+  const p2 = opp
+    ? `<div class="fighter p2"><div class="who"><span class="now-no">${tag(opp)}</span>${sideTag(st, m, opp)}</div><div class="now-name">${esc(tname(opp))}</div><div class="beat">${beat}</div></div>`
+    : `<div class="fighter p2"><div class="now-name">Bye</div><div class="beat">No opponent this round</div></div>`;
+  const head = `<h2 class="win-title"><span>${done && ADMIN ? 'Editing result' : 'Now playing'}</span><span class="sub">${esc(st.name)} · Match ${esc(m ? m.no : '')} · ${st.done} of ${st.total} run</span></h2>
+    <div class="faceoff">
+      <div class="fighter p1"><div class="who">${icon('cursor', 'cursor')}<span class="now-no">${tag(team)}</span>${sideTag(st, m, team)}</div><div class="now-name">${esc(tname(team))}</div>${members(team) ? `<div class="now-mem">${esc(members(team))}</div>` : ''}</div>
+      <span class="vsbig" aria-label="versus">VS</span>${p2}
+    </div>
+    ${done ? '' : `<p class="announce">${tag(team)} ${esc(tname(team))} enters the course!</p>`}`;
+  if (!ADMIN) {
+    el.innerHTML = head + `<div class="stats">
+      <div class="stat"><span class="lbl">Start</span><span class="val">${run && run.start ? esc(run.start) : '--:--'}</span></div>
+      <div class="stat"><span class="lbl">T1 distance</span><span class="val">${done && run.status === 'done' ? fmt(run.d1) : '--'}<small>cm</small></span></div>
+      <div class="stat"><span class="lbl">T2 distance</span><span class="val">${done && run.status === 'done' ? fmt(run.d2) : '--'}<small>cm</small></span></div>
+      <div class="stat score"><span class="lbl">Score</span><span class="val">${scoreText(run)}</span></div></div>`;
+    return;
+  }
+  const dk = sid + ':' + team, dr = draftFor(dk, run);
+  const d1 = parseNum(dr.d1), d2 = parseNum(dr.d2);
+  const preview = d1 != null && d2 != null && !isNaN(d1) && !isNaN(d2) ? fmt(d1 + d2) : '--';
+  el.innerHTML = head + `<div class="stats">
+      <div class="stat"><label class="lbl" for="fStart">Start</label><div class="row"><input id="fStart" class="inp" type="time" value="${esc(dr.start)}"><button type="button" class="btn sm" id="bNow" title="Stamp the current time">${icon('clock')}<span class="sr">Now</span></button></div></div>
+      <div class="stat"><label class="lbl" for="fD1">T1 distance (cm)</label><input id="fD1" class="inp" inputmode="decimal" autocomplete="off" placeholder="0.0" value="${esc(dr.d1)}"></div>
+      <div class="stat"><label class="lbl" for="fD2">T2 distance (cm)</label><input id="fD2" class="inp" inputmode="decimal" autocomplete="off" placeholder="0.0" value="${esc(dr.d2)}"></div>
+      <div class="stat score"><span class="lbl">Score</span><span class="val" id="fScore">${preview}</span></div>
+    </div>
+    <div class="acts">
+      <button type="button" class="btn go" id="bSave">${done ? 'Save changes' : 'Save result'}</button>
+      ${done ? '<button type="button" class="btn" id="bClear">Clear result</button>' : `<button type="button" class="btn" id="bSkip">${icon('skip')} Skip, come back later</button><button type="button" class="btn red" id="bDns">No-show</button>`}
+      <span class="spacer"></span>
+      ${pinned ? `<button type="button" class="btn" id="bUnpin">${done ? 'Cancel' : 'Back to queue order'}</button>` : ''}
+    </div>
+    <p class="msg" id="nowMsg">${done && later ? 'Later rounds are already drawn — changing this result can change their match-ups.' : 'Enter T1 and T2, then Save (Enter in T2 saves).'}</p>`;
+  const upd = () => {
+    dr.start = $('fStart').value; dr.d1 = $('fD1').value; dr.d2 = $('fD2').value;
+    const a = parseNum(dr.d1), b = parseNum(dr.d2);
+    $('fD1').setAttribute('aria-invalid', String(Number.isNaN(a))); $('fD2').setAttribute('aria-invalid', String(Number.isNaN(b)));
+    $('fScore').textContent = a != null && b != null && !isNaN(a) && !isNaN(b) ? fmt(a + b) : '--';
+  };
+  ['fStart', 'fD1', 'fD2'].forEach(id => $(id).addEventListener('input', upd));
+  $('fD2').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('bSave').click(); } });
+  $('fD1').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('fD2').focus(); } });
+  $('bNow').onclick = () => {
+    dr.start = hhmm(new Date()); $('fStart').value = dr.start;
+    if (!done) setRun(sid, team, { start: dr.start, status: 'running' });
+  };
+  $('bSave').onclick = () => {
+    upd();
+    const a = parseNum(dr.d1), b = parseNum(dr.d2);
+    if (a == null || b == null || isNaN(a) || isNaN(b)) { $('nowMsg').className = 'msg bad'; $('nowMsg').textContent = 'Enter both distances as numbers (0 or more), e.g. 12.5.'; ($(a == null || isNaN(a) ? 'fD1' : 'fD2')).focus(); return; }
+    const start = dr.start || (run && run.start) || hhmm(new Date());
+    const was = run && run.t;
+    mutate(d => {
+      d.runs[sid] = d.runs[sid] || {};
+      d.runs[sid][team] = { start, d1: a, d2: b, status: 'done', t: done && was ? was : Date.now() };
+      if (d.current && d.current.stage === sid && d.current.team === team) d.current = null;
+    });
+    delete drafts[dk];
+    toast(`${tag(team)} ${tname(team)}: ${fmt(a + b)} saved.`, 'ok');
+  };
+  if ($('bSkip')) $('bSkip').onclick = () => {
+    mutate(d => {
+      d.runs[sid] = d.runs[sid] || {};
+      d.runs[sid][team] = Object.assign({}, d.runs[sid][team], { status: 'skip', skipT: Date.now() });
+      if (d.current && d.current.team === team) d.current = null;
+    });
+    toast(`${tag(team)} moved to “come back later”.`);
+  };
+  if ($('bDns')) $('bDns').onclick = e => {
+    if (!confirmTap(e.currentTarget, 'Tap again: no-show')) return;
+    mutate(d => {
+      d.runs[sid] = d.runs[sid] || {};
+      d.runs[sid][team] = { start: dr.start || '', status: 'forfeit', t: Date.now() };
+      if (d.current && d.current.team === team) d.current = null;
+    });
+    delete drafts[dk];
+  };
+  if ($('bClear')) $('bClear').onclick = e => {
+    if (!confirmTap(e.currentTarget, 'Tap again to clear')) return;
+    delete drafts[dk]; setRun(sid, team, null);
+  };
+  if ($('bUnpin')) $('bUnpin').onclick = () => { delete drafts[dk]; unpin(); };
+}
+
+function renderNext() {
+  const cur = B.current, st = cur ? B.S[cur.stage] : B.active;
+  const item = (team, sub) => `<li class="qi">${icon('cursor')}<span class="px">${tag(team)}</span><div><b>${esc(tname(team))}</b><small>${sub}</small></div>${ADMIN ? `<button type="button" class="btn sm" data-call="${esc(team)}" data-stage="${st.id}">Call up</button>` : '<span></span>'}</li>`;
+  const sub = team => { const { m, opp } = T.teamResult(st, team); return `Match ${esc(m ? m.no : '')}${opp ? ` · vs ${tag(opp)}` : ''}`; };
+  const nextTeams = B.next.map(x => x.team);
+  const skipped = (st.skipped || []).filter(t => !cur || t !== cur.team);
+  const pct = st.total ? Math.round((st.done / st.total) * 100) : 0;
+  $('next').innerHTML = `<h2 class="win-title"><span>Up next</span><span class="sub">${esc(st.name)}</span></h2>
+    ${nextTeams.length ? `<ol class="qlist">${nextTeams.map(t => item(t, sub(t))).join('')}</ol>` : '<p class="qempty">Nobody else waiting in this stage.</p>'}
+    ${skipped.length ? `<h3 class="qh">${icon('skip')} Come back later · ${skipped.length}</h3><ul class="qlist">${skipped.map(t => item(t, sub(t) + ' · skipped')).join('')}</ul>` : ''}
+    <div class="progress"><div class="qh" style="margin:0">Stage progress · ${st.done || 0} / ${st.total || 0}</div><div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><i style="width:${pct}%"></i></div></div>`;
+}
+
+function renderDecide() {
+  const el = $('decide');
+  if (!ADMIN) { el.hidden = true; return; }
+  const items = [];
+  B.stages.forEach(st => {
+    (st.ties || []).forEach(m => items.push(`<li><span><b>${esc(st.name)} · Match ${esc(m.no)}</b> — ${tag(m.a)} and ${tag(m.b)} ${m.sa === Infinity ? 'were both no-shows' : 'both scored ' + fmt(m.sa)}. Who goes through?</span>
+      <span class="acts"><button type="button" class="btn sm go" data-pick="${esc(m.key)}" data-team="${esc(m.a)}">${tag(m.a)} wins</button><button type="button" class="btn sm go" data-pick="${esc(m.key)}" data-team="${esc(m.b)}">${tag(m.b)} wins</button></span></li>`));
+    if (st.wildcardTie) items.push(`<li><span><b>Qualifying wildcard</b> — these teams tied for the best score among non-winners. Pick the one that advances.</span>
+      <span class="acts">${st.wildcardTie.teams.map(t => `<button type="button" class="btn sm go" data-pick="${esc(st.wildcardTie.key)}" data-team="${esc(t)}">${tag(t)}</button>`).join('')}</span></li>`);
+  });
+  const picked = Object.keys(D().picks || {}).length;
+  const warns = sheets.warnings || [];
+  el.hidden = !items.length && !warns.length;
+  el.innerHTML = (items.length ? `<h2 class="win-title"><span>Needs a decision</span><span class="sub">${items.length} tie${items.length > 1 ? 's' : ''}${picked ? ` · ${picked} decided earlier` : ''}</span></h2><ul>${items.join('')}</ul>` : '')
+    + (warns.length ? `<h2 class="win-title" style="margin-top:${items.length ? 16 : 0}px"><span>Sheet check</span><span class="sub">sheets/*.xlsx</span></h2><ul class="warn-list">${warns.map(w => `<li>${esc(w)}</li>`).join('')}</ul>` : '');
+}
+
+function renderBoard() {
+  const open = B.stages.filter(s => s.status !== 'locked');
+  const hasResults = s => Object.values((D().runs || {})[s.id] || {}).some(r => r.status === 'done');
+  let sel = (boardStage && B.S[boardStage] && B.S[boardStage].status !== 'locked') ? B.S[boardStage] : (B.current ? B.S[B.current.stage] : B.active);
+  if (!boardStage && !hasResults(sel)) { const prev = open.filter(hasResults).pop(); if (prev) sel = prev; }
+  const seedOf = t => { const m = sel.matches.find(x => x.a === t || x.b === t); return m ? (m.a === t ? m.seedA : m.seedB) : null; };
+  const rs = (D().runs || {})[sel.id] || {};
+  const order = sel.matches.flatMap(m => [m.a, m.b]).filter(Boolean);
+  const rows = order.map(t => ({ t, r: rs[t], s: T.score(rs[t]), q: sel.queue ? sel.queue.indexOf(t) : -1 }));
+  const grp = x => (x.s != null && x.s !== Infinity ? 0 : x.s === Infinity ? 1 : 2);
+  rows.sort((a, b) => grp(a) - grp(b) || (grp(a) === 0 ? a.s - b.s || (a.r.d2 - b.r.d2) : grp(a) === 2 ? a.q - b.q : 0) || +a.t - +b.t);
+  let rank = 0, prev = null;
+  const medal = ['gold', 'silver', 'bronze'];
+  const body = rows.map((x, i) => {
+    const scored = grp(x) === 0;
+    if (scored) { if (x.s !== prev) rank = i + 1; prev = x.s; }
+    const r = x.r || {};
+    const isCur = B.current && B.current.stage === sel.id && B.current.team === x.t;
+    const acted = r.status === 'done' || r.status === 'forfeit';
+    const rk = scored ? (rank <= 3 ? `<span class="tag ${medal[rank - 1]}">${rank}</span>` : `<span class="px">${rank}</span>`) : seedOf(x.t) ? `<span class="tag ghost">S${seedOf(x.t)}</span>` : '<span class="dim">--</span>';
+    const meta = r.status === 'done' ? `T1 ${fmt(r.d1)} · T2 ${fmt(r.d2)}${r.start ? ' · ' + esc(r.start) : ''}` : r.start ? 'Started ' + esc(r.start) : '';
+    return `<tr class="${isCur ? 'me' : ''}${scored && rank === 1 ? ' gold' : ''}">
+      <td class="rank">${rk}</td>
+      <td class="team"><span class="px">${tag(x.t)}</span><b>${esc(tname(x.t))}</b>${meta ? `<small class="m-only">${meta}</small>` : ''}${ADMIN ? `<button type="button" class="btn sm m-act" data-call="${esc(x.t)}" data-stage="${sel.id}">${acted ? icon('pencil') + ' Edit' : 'Call up'}</button>` : ''}</td>
+      <td class="d-only num">${r.start ? esc(r.start) : '--'}</td>
+      <td class="d-only r num">${r.status === 'done' ? fmt(r.d1) : '--'}</td>
+      <td class="d-only r num">${r.status === 'done' ? fmt(r.d2) : '--'}</td>
+      <td class="r"><span class="scorec">${scoreText(x.r)}</span></td>
+      <td>${resultTag(sel, x.t)}</td>
+      ${ADMIN ? `<td class="act"><button type="button" class="btn sm" data-call="${esc(x.t)}" data-stage="${sel.id}">${acted ? icon('pencil') + ' Edit' : 'Call up'}</button></td>` : ''}
+    </tr>`;
+  }).join('');
+  const tabs = open.length > 1 ? `<div class="tabs" role="tablist" aria-label="Stage">${open.map(s => `<button type="button" role="tab" class="btn" data-tab="${s.id}" aria-selected="${s.id === sel.id}" aria-pressed="${s.id === sel.id}">${esc(s.short)}</button>`).join('')}</div>` : '';
+  $('board').innerHTML = `<h2 class="win-title"><span>Leaderboard</span><span class="sub">${esc(sel.name)} · ${hasResults(sel) ? 'lowest score wins' : 'seeding order, no runs yet'}</span></h2>${tabs}
+    ${rows.length ? `<table><thead><tr><th>Rank</th><th>Team</th><th class="d-only">Start</th><th class="d-only r">T1</th><th class="d-only r">T2</th><th class="r">Score</th><th>Result</th>${ADMIN ? '<th class="act"><span class="sr">Actions</span></th>' : ''}</tr></thead><tbody>${body}</tbody></table>` : '<p class="board-empty">No teams in this stage yet.</p>'}
+    <div class="board-foot"><span>Score = T1 distance + T2 distance (cm)</span><span>Win = lower score than your match opponent</span>${sel.id === 'Q' ? '<span>Wildcard = best score among non-winners</span>' : ''}${sel.id === 'R14' ? '<span>Best Best-of-14 winner goes straight to the Semi-Finals</span>' : ''}</div>`;
+}
+
+function renderFocus() {
+  const sel = $('focusSel');
+  if (document.activeElement === sel) return;
+  const open = B.stages.filter(s => s.status !== 'locked');
+  sel.innerHTML = `<option value="">Auto: ${esc(B.active.short)}</option>` + open.map(s => `<option value="${s.id}"${D().focus === s.id ? ' selected' : ''}>Run ${esc(s.short)}</option>`).join('');
+}
+
+// ---------- events ----------
+document.addEventListener('click', e => {
+  const c = e.target.closest('[data-call]');
+  if (c && ADMIN) return callUp(c.dataset.stage, c.dataset.call);
+  const p = e.target.closest('[data-pick]');
+  if (p && ADMIN) return mutate(d => { d.picks = d.picks || {}; d.picks[p.dataset.pick] = p.dataset.team; });
+  const tb = e.target.closest('[data-tab]');
+  if (tb) { boardStage = tb.dataset.tab; renderBoard(); }
+});
+$('focusSel').addEventListener('change', e => mutate(d => { d.focus = e.target.value || null; d.current = null; }));
+$('undo').onclick = () => { if (!store.undo()) toast('Nothing to undo.'); };
+
+render();
+store.start();
+})();
+</script>
+</body>
+</html>

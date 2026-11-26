@@ -1,0 +1,638 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-26T17:25:50+00:00",
+  "title": "Design System: IM Competition Dashboard",
+  "extensions": {
+    "colorMeta": {
+      "frame-navy": {
+        "role": "primary",
+        "displayName": "Frame Navy",
+        "canonical": "#1b2142",
+        "tonalRamp": [
+          "#1c1f31",
+          "#2e3558",
+          "#3e4983",
+          "#4c5bb0",
+          "#737fc3",
+          "#9fa7d1",
+          "#c8cce2",
+          "#eff0f6"
+        ]
+      },
+      "ink-dusk": {
+        "role": "neutral",
+        "displayName": "Ink Dusk",
+        "canonical": "#4a5280",
+        "tonalRamp": [
+          "#20222d",
+          "#363a51",
+          "#4b5176",
+          "#5e679e",
+          "#8189b4",
+          "#a8adc8",
+          "#cdcfdd",
+          "#f0f1f4"
+        ]
+      },
+      "ink-haze": {
+        "role": "neutral",
+        "displayName": "Ink Haze",
+        "canonical": "#6c74a0",
+        "tonalRamp": [
+          "#21232c",
+          "#393c4e",
+          "#4f5472",
+          "#646c97",
+          "#868daf",
+          "#abafc5",
+          "#ced0dc",
+          "#f0f1f4"
+        ]
+      },
+      "periwinkle-ground": {
+        "role": "neutral",
+        "displayName": "Periwinkle Ground",
+        "canonical": "#dfe6ff",
+        "tonalRamp": [
+          "#0e183f",
+          "#112775",
+          "#0f33b2",
+          "#063bf5",
+          "#3c65fa",
+          "#7c96f4",
+          "#b6c4f4",
+          "#eaeefa"
+        ]
+      },
+      "dither-dot": {
+        "role": "neutral",
+        "displayName": "Dither Dot",
+        "canonical": "#cfd9fc",
+        "tonalRamp": [
+          "#111a3c",
+          "#172b70",
+          "#1839a9",
+          "#1443e7",
+          "#476cef",
+          "#839bed",
+          "#bac6f1",
+          "#ebeef9"
+        ]
+      },
+      "window-white": {
+        "role": "neutral",
+        "displayName": "Window White",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#262626",
+          "#434343",
+          "#616161",
+          "#7e7e7e",
+          "#9b9b9b",
+          "#b8b8b8",
+          "#d5d5d5",
+          "#f2f2f2"
+        ]
+      },
+      "window-well": {
+        "role": "neutral",
+        "displayName": "Window Well",
+        "canonical": "#eef2ff",
+        "tonalRamp": [
+          "#0e193f",
+          "#112975",
+          "#0f35b2",
+          "#063ff5",
+          "#3c69fa",
+          "#7c98f4",
+          "#b6c5f4",
+          "#eaeefa"
+        ]
+      },
+      "dotted-rule": {
+        "role": "neutral",
+        "displayName": "Dotted Rule",
+        "canonical": "#c6d0f3",
+        "tonalRamp": [
+          "#161d36",
+          "#233164",
+          "#2b4396",
+          "#3052cb",
+          "#5d78d9",
+          "#91a2df",
+          "#c1cae9",
+          "#edeff8"
+        ]
+      },
+      "frame-bevel": {
+        "role": "neutral",
+        "displayName": "Frame Bevel",
+        "canonical": "#8ea5ef",
+        "tonalRamp": [
+          "#141d39",
+          "#1e3069",
+          "#23409e",
+          "#244fd7",
+          "#5375e2",
+          "#8ba0e5",
+          "#bec9ed",
+          "#eceff8"
+        ]
+      },
+      "button-lip": {
+        "role": "neutral",
+        "displayName": "Button Lip",
+        "canonical": "#b9c5ee",
+        "tonalRamp": [
+          "#171e35",
+          "#253362",
+          "#2f4592",
+          "#3556c6",
+          "#617bd5",
+          "#93a4dd",
+          "#c2cbe8",
+          "#edf0f7"
+        ]
+      },
+      "button-pressed": {
+        "role": "neutral",
+        "displayName": "Button Pressed",
+        "canonical": "#e3e9ff",
+        "tonalRamp": [
+          "#0e183f",
+          "#112775",
+          "#0f32b2",
+          "#063af5",
+          "#3c65fa",
+          "#7c96f4",
+          "#b6c3f4",
+          "#eaeefa"
+        ]
+      },
+      "p1-red": {
+        "role": "primary",
+        "displayName": "P1 Red",
+        "canonical": "#d93a4a",
+        "tonalRamp": [
+          "#371619",
+          "#652228",
+          "#982934",
+          "#ce2d3d",
+          "#db5b67",
+          "#e18f97",
+          "#eac0c4",
+          "#f8edee"
+        ]
+      },
+      "p1-red-lip": {
+        "role": "primary",
+        "displayName": "Red Lip",
+        "canonical": "#9c2230",
+        "tonalRamp": [
+          "#36171a",
+          "#64232b",
+          "#952c38",
+          "#ca3143",
+          "#d85e6c",
+          "#df919a",
+          "#e9c1c6",
+          "#f7edee"
+        ]
+      },
+      "p1-red-pressed": {
+        "role": "primary",
+        "displayName": "Red Pressed",
+        "canonical": "#bf2f3e",
+        "tonalRamp": [
+          "#35171b",
+          "#62252b",
+          "#922f39",
+          "#c63645",
+          "#d4616d",
+          "#dc949b",
+          "#e8c2c6",
+          "#f7edee"
+        ]
+      },
+      "p1-tint": {
+        "role": "secondary",
+        "displayName": "P1 Tint",
+        "canonical": "#ffe4e6",
+        "tonalRamp": [
+          "#3f0e11",
+          "#751119",
+          "#b20f1b",
+          "#f50618",
+          "#fa3c4a",
+          "#f47c85",
+          "#f4b6bb",
+          "#faeaeb"
+        ]
+      },
+      "p2-blue": {
+        "role": "secondary",
+        "displayName": "P2 Blue",
+        "canonical": "#2f62d6",
+        "tonalRamp": [
+          "#162037",
+          "#223665",
+          "#2a4b97",
+          "#2e5fce",
+          "#5b82db",
+          "#90a8e0",
+          "#c0cdea",
+          "#edf0f8"
+        ]
+      },
+      "p2-tint": {
+        "role": "secondary",
+        "displayName": "P2 Tint",
+        "canonical": "#e1e9ff",
+        "tonalRamp": [
+          "#0e1b3f",
+          "#112c75",
+          "#0f3ab2",
+          "#0646f5",
+          "#3c6efa",
+          "#7c9cf4",
+          "#b6c7f4",
+          "#eaeefa"
+        ]
+      },
+      "coin-gold": {
+        "role": "tertiary",
+        "displayName": "Coin Gold",
+        "canonical": "#f5b324",
+        "tonalRamp": [
+          "#3d2e10",
+          "#715416",
+          "#ab7c16",
+          "#eaa611",
+          "#f2bb44",
+          "#efcc81",
+          "#f2e0b9",
+          "#faf5eb"
+        ]
+      },
+      "coin-gold-lip": {
+        "role": "tertiary",
+        "displayName": "Gold Lip",
+        "canonical": "#c2850a",
+        "tonalRamp": [
+          "#3c2e10",
+          "#715316",
+          "#aa7917",
+          "#e9a212",
+          "#f1b845",
+          "#eeca82",
+          "#f1dfb9",
+          "#faf5eb"
+        ]
+      },
+      "coin-gold-pressed": {
+        "role": "tertiary",
+        "displayName": "Gold Pressed",
+        "canonical": "#e0a114",
+        "tonalRamp": [
+          "#3b2e12",
+          "#6d531a",
+          "#a57b1c",
+          "#e1a41a",
+          "#eab94b",
+          "#eacb86",
+          "#efdfbb",
+          "#f9f5eb"
+        ]
+      },
+      "coin-gold-tint": {
+        "role": "tertiary",
+        "displayName": "Gold Tint",
+        "canonical": "#fff1c4",
+        "tonalRamp": [
+          "#3f330e",
+          "#755e11",
+          "#b28b0f",
+          "#f5bc06",
+          "#facd3c",
+          "#f4d87c",
+          "#f4e5b6",
+          "#faf7ea"
+        ]
+      },
+      "coin-gold-ink": {
+        "role": "tertiary",
+        "displayName": "Gold Ink",
+        "canonical": "#6e4a00",
+        "tonalRamp": [
+          "#3f2f0e",
+          "#755511",
+          "#b27d0f",
+          "#f5a706",
+          "#fabc3c",
+          "#f4cd7c",
+          "#f4e0b6",
+          "#faf5ea"
+        ]
+      },
+      "medal-silver": {
+        "role": "tertiary",
+        "displayName": "Medal Silver",
+        "canonical": "#aab3cf",
+        "tonalRamp": [
+          "#1f232d",
+          "#353c51",
+          "#4a5577",
+          "#5d6d9f",
+          "#808db5",
+          "#a7afc9",
+          "#ccd1de",
+          "#f0f1f5"
+        ]
+      },
+      "medal-bronze": {
+        "role": "tertiary",
+        "displayName": "Medal Bronze",
+        "canonical": "#d08a4c",
+        "tonalRamp": [
+          "#352518",
+          "#614226",
+          "#905e31",
+          "#c37938",
+          "#d29763",
+          "#dbb695",
+          "#e7d4c3",
+          "#f7f2ed"
+        ]
+      },
+      "hp-green": {
+        "role": "tertiary",
+        "displayName": "HP Green",
+        "canonical": "#23924d",
+        "tonalRamp": [
+          "#173523",
+          "#25623c",
+          "#2e9354",
+          "#35c76c",
+          "#61d58d",
+          "#93ddaf",
+          "#c2e8d0",
+          "#edf7f1"
+        ]
+      },
+      "fault-red": {
+        "role": "tertiary",
+        "displayName": "Fault Red",
+        "canonical": "#c42f3d",
+        "tonalRamp": [
+          "#35171a",
+          "#62252a",
+          "#932e38",
+          "#c73542",
+          "#d5616c",
+          "#dd939a",
+          "#e8c2c6",
+          "#f7edee"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "On-stage team number in Now Playing."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "HUD logo, page titles, big VS chip, Champion headline."
+      },
+      "title": {
+        "displayName": "Window Title",
+        "purpose": "Every window title bar."
+      },
+      "score": {
+        "displayName": "Score",
+        "purpose": "Scores, ranks, team numbers, times, lap counts."
+      },
+      "name": {
+        "displayName": "Team Name",
+        "purpose": "On-stage team name; list names run 17-20px."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text and table cells."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Uppercase stat labels, table headers, field labels, title meta."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Uppercase button and menu text."
+      },
+      "field": {
+        "displayName": "Field",
+        "purpose": "Numbers the moderator types."
+      }
+    },
+    "shadows": [],
+    "frames": [
+      {
+        "name": "window",
+        "value": "5x5 SVG, slice 2, 8px border",
+        "purpose": "Dialog windows; variants p1 (red bevel), gold (gold bevel), flat (no bevel)."
+      },
+      {
+        "name": "control",
+        "value": "5x5 SVG, slice 2, 6px border",
+        "purpose": "Buttons, fields, map pins."
+      },
+      {
+        "name": "tag",
+        "value": "3x3 plus SVG, slice 1, 3px border",
+        "purpose": "Status tags."
+      }
+    ],
+    "motion": [
+      {
+        "name": "blink",
+        "value": "1s steps(1) infinite",
+        "purpose": "Pixel cursor and current menu item; live dot at 1.2s."
+      },
+      {
+        "name": "press",
+        "value": "transform 60ms steps(1)",
+        "purpose": "Button drops 2px when pressed."
+      },
+      {
+        "name": "score-rise",
+        "value": ".9s steps(6)",
+        "purpose": "A newly saved score rises into its result row."
+      },
+      {
+        "name": "flash",
+        "value": ".8s steps(4) x2",
+        "purpose": "Bracket card or speed row flashes gold after a re-flow."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation:none; transition:none",
+        "purpose": "All motion off under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "mobile",
+        "value": "720px"
+      },
+      {
+        "name": "stage-stack",
+        "value": "1000px"
+      },
+      {
+        "name": "speed-sheet",
+        "value": "600px"
+      },
+      {
+        "name": "speed-desk",
+        "value": "760px"
+      },
+      {
+        "name": "container",
+        "value": "1320px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Default pixel button: white face, periwinkle lip, presses down 2px.",
+      "html": "<button class=\"ds-btn\">Skip</button>",
+      "css": ".ds-btn{--b:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='5' shape-rendering='crispEdges'%3E%3Cpath fill='%231b2142' d='M1 0h3v1H1zM0 1h1v3H0zM4 1h1v3H4zM1 4h3v1H1z'/%3E%3Cpath fill='%23fff' d='M1 1h3v2H1z'/%3E%3Cpath fill='%23b9c5ee' d='M1 3h3v1H1z'/%3E%3C/svg%3E\");--bp:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='5' shape-rendering='crispEdges'%3E%3Cpath fill='%231b2142' d='M1 0h3v1H1zM0 1h1v3H0zM4 1h1v3H4zM1 4h3v1H1z'/%3E%3Cpath fill='%23e3e9ff' d='M1 1h3v3H1z'/%3E%3C/svg%3E\");appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 12px;border:6px solid transparent;border-image:var(--b) 2 fill / 6px / 0 stretch;background:none;color:#1b2142;font-family:'DotGothic16',ui-sans-serif,system-ui,sans-serif;font-size:16px;line-height:1;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:transform 60ms steps(1);color:#1b2142;} .ds-btn:hover{filter:brightness(1.04);} .ds-btn:active{border-image-source:var(--bp);transform:translateY(2px);} .ds-btn:focus-visible{outline:3px solid #f5b324;outline-offset:3px;}"
+    },
+    {
+      "name": "Go Button",
+      "kind": "button",
+      "refersTo": "button-go",
+      "description": "Coin-gold primary action; one per action row (Save, confirm).",
+      "html": "<button class=\"ds-btn-go\">Save run</button>",
+      "css": ".ds-btn-go{--b:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='5' shape-rendering='crispEdges'%3E%3Cpath fill='%231b2142' d='M1 0h3v1H1zM0 1h1v3H0zM4 1h1v3H4zM1 4h3v1H1z'/%3E%3Cpath fill='%23f5b324' d='M1 1h3v2H1z'/%3E%3Cpath fill='%23c2850a' d='M1 3h3v1H1z'/%3E%3C/svg%3E\");--bp:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='5' shape-rendering='crispEdges'%3E%3Cpath fill='%231b2142' d='M1 0h3v1H1zM0 1h1v3H0zM4 1h1v3H4zM1 4h3v1H1z'/%3E%3Cpath fill='%23e0a114' d='M1 1h3v3H1z'/%3E%3C/svg%3E\");appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 12px;border:6px solid transparent;border-image:var(--b) 2 fill / 6px / 0 stretch;background:none;color:#1b2142;font-family:'DotGothic16',ui-sans-serif,system-ui,sans-serif;font-size:16px;line-height:1;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:transform 60ms steps(1);color:#1b2142;} .ds-btn-go:hover{filter:brightness(1.04);} .ds-btn-go:active{border-image-source:var(--bp);transform:translateY(2px);} .ds-btn-go:focus-visible{outline:3px solid #f5b324;outline-offset:3px;}"
+    },
+    {
+      "name": "Red Button",
+      "kind": "button",
+      "refersTo": "button-red",
+      "description": "P1-red button with white text for destructive or P1-side actions.",
+      "html": "<button class=\"ds-btn-red\">No-show</button>",
+      "css": ".ds-btn-red{--b:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='5' shape-rendering='crispEdges'%3E%3Cpath fill='%231b2142' d='M1 0h3v1H1zM0 1h1v3H0zM4 1h1v3H4zM1 4h3v1H1z'/%3E%3Cpath fill='%23d93a4a' d='M1 1h3v2H1z'/%3E%3Cpath fill='%239c2230' d='M1 3h3v1H1z'/%3E%3C/svg%3E\");--bp:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='5' shape-rendering='crispEdges'%3E%3Cpath fill='%231b2142' d='M1 0h3v1H1zM0 1h1v3H0zM4 1h1v3H4zM1 4h3v1H1z'/%3E%3Cpath fill='%23bf2f3e' d='M1 1h3v3H1z'/%3E%3C/svg%3E\");appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 12px;border:6px solid transparent;border-image:var(--b) 2 fill / 6px / 0 stretch;background:none;color:#1b2142;font-family:'DotGothic16',ui-sans-serif,system-ui,sans-serif;font-size:16px;line-height:1;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:transform 60ms steps(1);color:#fff;} .ds-btn-red:hover{filter:brightness(1.04);} .ds-btn-red:active{border-image-source:var(--bp);transform:translateY(2px);} .ds-btn-red:focus-visible{outline:3px solid #f5b324;outline-offset:3px;}"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Moderator number entry with an inset pixel well and gold focus ring.",
+      "html": "<label class=\"ds-field\">Distance T1 (cm)<input class=\"ds-inp\" inputmode=\"decimal\" placeholder=\"--\"></label>",
+      "css": ".ds-field{display:block;font-family:'DotGothic16',ui-sans-serif,system-ui,sans-serif;font-size:14px;line-height:1.2;letter-spacing:.06em;text-transform:uppercase;color:#4a5280;} .ds-inp{display:block;width:100%;margin-top:6px;min-height:48px;padding:4px 8px;border:6px solid transparent;border-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='5' shape-rendering='crispEdges'%3E%3Cpath fill='%231b2142' d='M1 0h3v1H1zM0 1h1v3H0zM4 1h1v3H4zM1 4h3v1H1z'/%3E%3Cpath fill='%23c6d0f3' d='M1 1h3v1H1zM1 2h1v2H1z'/%3E%3Cpath fill='%23fff' d='M2 2h2v2H2z'/%3E%3C/svg%3E\") 2 fill / 6px / 0 stretch;background:none;color:#1b2142;font-family:'DotGothic16',ui-sans-serif,system-ui,sans-serif;font-size:22px;line-height:1.1;letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums;caret-color:#d93a4a;} .ds-inp::placeholder{color:#6c74a0;} .ds-inp:focus-visible{outline:3px solid #f5b324;outline-offset:1px;}"
+    },
+    {
+      "name": "Tags",
+      "kind": "chip",
+      "refersTo": "tag",
+      "description": "Plus-notched status badges: gold win, red/blue sides, green wildcard, ghost out.",
+      "html": "<span class=\"ds-tag ds-gold\">Win</span> <span class=\"ds-tag ds-red\">Seed 1</span> <span class=\"ds-tag ds-blue\">On now</span> <span class=\"ds-tag ds-green\">Wildcard</span> <span class=\"ds-tag ds-ghost\">Out</span>",
+      "css": ".ds-tag{--t:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3' height='3' shape-rendering='crispEdges'%3E%3Cpath fill='%231b2142' d='M1 0h1v3H1zM0 1h3v1H0z'/%3E%3C/svg%3E\");display:inline-flex;align-items:center;gap:6px;padding:2px 6px;border:3px solid transparent;border-image:var(--t) 1 fill / 3px / 0 stretch;color:#fff;font-family:'DotGothic16',ui-sans-serif,system-ui,sans-serif;font-size:13px;line-height:1.2;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;} .ds-gold{color:#1b2142;--t:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3' height='3' shape-rendering='crispEdges'%3E%3Cpath fill='%23f5b324' d='M1 0h1v3H1zM0 1h3v1H0z'/%3E%3C/svg%3E\");} .ds-red{--t:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3' height='3' shape-rendering='crispEdges'%3E%3Cpath fill='%23d93a4a' d='M1 0h1v3H1zM0 1h3v1H0z'/%3E%3C/svg%3E\");} .ds-blue{--t:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3' height='3' shape-rendering='crispEdges'%3E%3Cpath fill='%232f62d6' d='M1 0h1v3H1zM0 1h3v1H0z'/%3E%3C/svg%3E\");} .ds-green{--t:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3' height='3' shape-rendering='crispEdges'%3E%3Cpath fill='%2323924d' d='M1 0h1v3H1zM0 1h3v1H0z'/%3E%3C/svg%3E\");} .ds-ghost{color:#4a5280;--t:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3' height='3' shape-rendering='crispEdges'%3E%3Cpath fill='%23e3e9ff' d='M1 0h1v3H1zM0 1h3v1H0z'/%3E%3C/svg%3E\");}"
+    },
+    {
+      "name": "Window",
+      "kind": "card",
+      "refersTo": "window",
+      "description": "RPG dialog window: navy notched frame, periwinkle bevel, Press Start title over a dotted rule.",
+      "html": "<section class=\"ds-win\"><h2 class=\"ds-win-title\"><span>Up next</span><span class=\"ds-sub\">Qualifying</span></h2><div class=\"ds-row\"><b>#07</b> Team 07</div><div class=\"ds-row\"><b>#12</b> Team 12</div></section>",
+      "css": ".ds-win{border:8px solid transparent;border-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='5' shape-rendering='crispEdges'%3E%3Cpath fill='%231b2142' d='M1 0h3v1H1zM0 1h1v3H0zM4 1h1v3H4zM1 4h3v1H1z'/%3E%3Cpath fill='%238ea5ef' d='M1 1h3v1H1zM1 3h3v1H1zM1 2h1v1H1zM3 2h1v1H3z'/%3E%3Cpath fill='%23fff' d='M2 2h1v1H2z'/%3E%3C/svg%3E\") 2 fill / 8px / 0 stretch;padding:12px 14px;color:#1b2142;font-family:'DotGothic16',ui-sans-serif,system-ui,sans-serif;font-size:18px;line-height:1.45;} .ds-win-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 12px;padding-bottom:10px;font-family:'Press Start 2P',ui-monospace,monospace;-webkit-font-smoothing:none;letter-spacing:0;font-size:16px;font-weight:400;line-height:1.3;background:linear-gradient(90deg,#c6d0f3 50%,transparent 0) bottom left/8px 2px repeat-x;} .ds-sub{font-family:'DotGothic16',ui-sans-serif,system-ui,sans-serif;font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:#4a5280;} .ds-row{display:flex;gap:10px;align-items:center;padding:6px 8px;margin-top:4px;background:#eef2ff;} .ds-row b{font-family:'Press Start 2P',ui-monospace,monospace;-webkit-font-smoothing:none;letter-spacing:0;font-size:14px;font-weight:400;}"
+    },
+    {
+      "name": "HUD Menu",
+      "kind": "nav",
+      "refersTo": "window",
+      "description": "Flat-framed menu; a red pixel cursor blinks beside the current page.",
+      "html": "<nav class=\"ds-menu\"><a href=\"#\" aria-current=\"page\"><svg viewBox=\"0 0 4 7\" width=\"4\" height=\"7\" style=\"height:1em;width:auto;shape-rendering:crispEdges;fill:currentColor\" aria-hidden=\"true\"><path d=\"M0 0h1v7H0zM1 1h1v5H1zM2 2h1v3H2zM3 3h1v1H3z\"/></svg>Scores</a><a href=\"#\"><svg viewBox=\"0 0 4 7\" width=\"4\" height=\"7\" style=\"height:1em;width:auto;shape-rendering:crispEdges;fill:currentColor\" aria-hidden=\"true\"><path d=\"M0 0h1v7H0zM1 1h1v5H1zM2 2h1v3H2zM3 3h1v1H3z\"/></svg>Bracket</a><a href=\"#\"><svg viewBox=\"0 0 4 7\" width=\"4\" height=\"7\" style=\"height:1em;width:auto;shape-rendering:crispEdges;fill:currentColor\" aria-hidden=\"true\"><path d=\"M0 0h1v7H0zM1 1h1v5H1zM2 2h1v3H2zM3 3h1v1H3z\"/></svg>Speed track</a></nav>",
+      "css": ".ds-menu{display:flex;gap:4px;padding:4px 6px;border:8px solid transparent;border-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='5' shape-rendering='crispEdges'%3E%3Cpath fill='%231b2142' d='M1 0h3v1H1zM0 1h1v3H0zM4 1h1v3H4zM1 4h3v1H1z'/%3E%3Cpath fill='%23fff' d='M1 1h3v3H1z'/%3E%3C/svg%3E\") 2 fill / 8px / 0 stretch;} .ds-menu a{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 10px;color:#1b2142;text-decoration:none;font-family:'DotGothic16',ui-sans-serif,system-ui,sans-serif;font-size:16px;line-height:1;letter-spacing:.08em;text-transform:uppercase;} .ds-menu a svg{visibility:hidden;color:#d93a4a;} .ds-menu a:hover svg{visibility:visible;} .ds-menu a[aria-current=page] svg{visibility:visible;animation:ds-blink 1s steps(1) infinite;} .ds-menu a:focus-visible{outline:3px solid #f5b324;outline-offset:3px;} @keyframes ds-blink{50%{visibility:hidden;}}"
+    },
+    {
+      "name": "Face-off",
+      "kind": "custom",
+      "refersTo": "vs-chip",
+      "description": "Now Playing battle window: P1 and P2 fighter panels split by a navy VS chip.",
+      "html": "<section class=\"ds-now\"><div class=\"ds-fo\"><div class=\"ds-f ds-p1\"><span class=\"ds-cur\"><svg viewBox=\"0 0 4 7\" width=\"4\" height=\"7\" style=\"height:1em;width:auto;shape-rendering:crispEdges;fill:currentColor\" aria-hidden=\"true\"><path d=\"M0 0h1v7H0zM1 1h1v5H1zM2 2h1v3H2zM3 3h1v1H3z\"/></svg></span><span class=\"ds-no\">#07</span><b class=\"ds-nm\">Team 07</b></div><span class=\"ds-vs\">VS</span><div class=\"ds-f ds-p2\"><span class=\"ds-no\">#31</span><b class=\"ds-nm\">Team 31</b></div></div></section>",
+      "css": ".ds-now{border:8px solid transparent;border-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='5' shape-rendering='crispEdges'%3E%3Cpath fill='%231b2142' d='M1 0h3v1H1zM0 1h1v3H0zM4 1h1v3H4zM1 4h3v1H1z'/%3E%3Cpath fill='%23d93a4a' d='M1 1h3v1H1zM1 3h3v1H1zM1 2h1v1H1zM3 2h1v1H3z'/%3E%3Cpath fill='%23fff' d='M2 2h1v1H2z'/%3E%3C/svg%3E\") 2 fill / 8px / 0 stretch;padding:14px 18px 18px;color:#1b2142;font-family:'DotGothic16',ui-sans-serif,system-ui,sans-serif;} .ds-fo{display:grid;grid-template-columns:minmax(0,1.5fr) auto minmax(0,1fr);gap:12px;align-items:stretch;} .ds-f{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 12px;} .ds-p1{background:#ffe4e6;} .ds-p2{background:#e1e9ff;} .ds-cur{color:#d93a4a;font-size:26px;animation:ds-blink 1s steps(1) infinite;} .ds-no{font-family:'Press Start 2P',ui-monospace,monospace;-webkit-font-smoothing:none;letter-spacing:0;font-size:40px;line-height:1;color:#d93a4a;} .ds-p2 .ds-no{font-size:24px;color:#2f62d6;} .ds-nm{font-size:34px;line-height:1.1;font-weight:400;} .ds-p2 .ds-nm{font-size:22px;} .ds-vs{align-self:center;font-family:'Press Start 2P',ui-monospace,monospace;-webkit-font-smoothing:none;letter-spacing:0;font-size:20px;line-height:1;padding:8px;background:#1b2142;color:#fff;} @keyframes ds-blink{50%{visibility:hidden;}}"
+    },
+    {
+      "name": "Match Card",
+      "kind": "custom",
+      "refersTo": "window-well-row",
+      "description": "Bracket VS card: two well-strip sides, gold-tinted winner, tiny VS chip between.",
+      "html": "<article class=\"ds-mc\"><header>Match 3</header><div class=\"ds-side ds-won\"><span class=\"ds-tag ds-red\">S1</span><b>Team 07</b><span class=\"ds-sc\">12.5</span></div><span class=\"ds-vsd\">VS</span><div class=\"ds-side ds-lost\"><span class=\"ds-tag ds-blue\">S15</span><b>Team 31</b><span class=\"ds-sc\">40</span></div></article>",
+      "css": ".ds-mc{display:grid;padding:6px 8px;border:8px solid transparent;border-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='5' shape-rendering='crispEdges'%3E%3Cpath fill='%231b2142' d='M1 0h3v1H1zM0 1h1v3H0zM4 1h1v3H4zM1 4h3v1H1z'/%3E%3Cpath fill='%23fff' d='M1 1h3v3H1z'/%3E%3C/svg%3E\") 2 fill / 8px / 0 stretch;color:#1b2142;font-family:'DotGothic16',ui-sans-serif,system-ui,sans-serif;} .ds-mc header{margin-bottom:4px;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:#4a5280;} .ds-side{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px;background:#eef2ff;font-size:17px;} .ds-won{background:#fff1c4;} .ds-won .ds-sc{color:#6e4a00;} .ds-lost{background:#fff;color:#4a5280;} .ds-sc{font-family:'Press Start 2P',ui-monospace,monospace;-webkit-font-smoothing:none;letter-spacing:0;font-size:13px;text-align:right;} .ds-vsd{justify-self:center;margin:-2px 0;position:relative;z-index:1;font-family:'Press Start 2P',ui-monospace,monospace;-webkit-font-smoothing:none;letter-spacing:0;font-size:8px;line-height:1;padding:3px 5px;background:#1b2142;color:#fff;} .ds-tag{--t:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3' height='3' shape-rendering='crispEdges'%3E%3Cpath fill='%231b2142' d='M1 0h1v3H1zM0 1h3v1H0z'/%3E%3C/svg%3E\");display:inline-flex;align-items:center;gap:6px;padding:2px 6px;border:3px solid transparent;border-image:var(--t) 1 fill / 3px / 0 stretch;color:#fff;font-family:'DotGothic16',ui-sans-serif,system-ui,sans-serif;font-size:13px;line-height:1.2;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;} .ds-red{--t:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3' height='3' shape-rendering='crispEdges'%3E%3Cpath fill='%23d93a4a' d='M1 0h1v3H1zM0 1h3v1H0z'/%3E%3C/svg%3E\");} .ds-blue{--t:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3' height='3' shape-rendering='crispEdges'%3E%3Cpath fill='%232f62d6' d='M1 0h1v3H1zM0 1h3v1H0z'/%3E%3C/svg%3E\");}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Tournament Cartridge",
+    "overview": "**Creative North Star: \"The Tournament Cartridge\"**\n\nEvery screen is a console menu from a 16-bit RPG, lit for daytime: a pale periwinkle field with a 2px dither, and on it white dialog windows drawn with a navy pixel frame and a periwinkle inner bevel. The competition reads as a game in progress. The team on stage is a battle window with a blinking pixel cursor; each match is a VS card; winners get coin gold; the knockout stages are pins on a dotted world-map route. Nothing is a rounded web card wearing a pixel font: the frames, buttons, fields and tags are 9-slice pixel art (`border-image` SVGs at 5x5 or 3x3 source pixels), so every corner is a real stepped notch.\n\nDensity is HUD-like and compact: windows stack in a single 1320px column with 16px gaps, rows inside windows sit on a pale well tint 4px apart, and numbers carry the weight in the pixel display face. Light mode is a binding brand commitment; there is no dark theme, and `color-scheme` is pinned to light.\n\nMotion is console motion: everything moves in `steps()`, never eased. Cursors and the live dot blink at 1s/1.2s steps(1); a fresh score rises into place in six steps; a re-flowed bracket card flashes gold in four steps. Reduced motion turns all of it off.",
+    "keyCharacteristics": [
+      "9-slice pixel frames on every container and control; zero border-radius anywhere.",
+      "Two-sided colour logic: P1 red is the M side / top seed / current player, P2 blue is the B side / bottom seed.",
+      "Coin gold means \"won\", \"1st\", or \"primary action\"; HP green means \"live / good\"; navy is the frame and the ink.",
+      "Press Start 2P for numbers, titles and the VS chip; DotGothic16 for names, body and labels.",
+      "Stepped, frame-by-frame motion only."
+    ],
+    "rules": [
+      {
+        "name": "The Two Sides Rule",
+        "body": "Red and blue are teams, not semantics. Red is always the M side / current player and blue is always the B side / opponent; never use either to mean \"error\" or \"info\". Errors use fault red.",
+        "section": "colors"
+      },
+      {
+        "name": "The Coin Rule",
+        "body": "Gold is earned: a win, first place, a decision that needs the moderator, or the one primary button in a row. One gold button per action row.",
+        "section": "colors"
+      },
+      {
+        "name": "The Pixel Numbers Rule",
+        "body": "Scores, ranks, team numbers, times and lap counts are set in Press Start 2P; names and words are DotGothic16. A number a student scans from the back of the room is always pixel type.",
+        "section": "typography"
+      },
+      {
+        "name": "The Unsmoothed Rule",
+        "body": "Every Press Start 2P use carries `-webkit-font-smoothing:none` and letter-spacing 0, so glyphs keep their hard pixel edges.",
+        "section": "typography"
+      },
+      {
+        "name": "The No Soft Shadow Rule",
+        "body": "No `box-shadow`, blur or gradient lighting. If something needs to lift, draw it into the frame SVG as pixels.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Press Down Rule",
+        "body": "A pressed button moves `translateY(2px)` in one step (60ms steps(1)) and loses its lip; that is the only elevation change in the system.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do draw every new container, control and badge as a 9-slice pixel `border-image` with notched corners, reusing the 5x5 (window/control) or 3x3 (tag) geometry.",
+      "Do keep red for the M side / current player and blue for the B side / opponent across every screen.",
+      "Do reserve coin gold for wins, first place, decisions and the single primary action in a row.",
+      "Do set every score, rank, team number and time in Press Start 2P with smoothing off.",
+      "Do animate with `steps()` timing only, and let `prefers-reduced-motion` switch it off.",
+      "Do use the pixel SVG icon set (cursor, lock, star, trophy, clock, skip, pencil) at 1em with crisp edges; draw new icons on the same 7 to 8 unit grid.",
+      "Do keep the page light: periwinkle dithered ground, white windows, navy ink."
+    ],
+    "donts": [
+      "Don't use `border-radius`, `box-shadow`, blur, or smooth gradients for depth.",
+      "Don't use eased or springy transitions; nothing glides.",
+      "Don't use P1 red to signal an error; errors are fault red.",
+      "Don't add a dark theme; light mode is a brand commitment.",
+      "Don't set long text in Press Start 2P; it is for numbers, titles and short labels only.",
+      "Don't use emoji or Unicode glyphs as icons; icons are pixel SVG paths."
+    ]
+  }
+}

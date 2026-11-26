@@ -4,6 +4,9 @@ node_modules/
 # Local data (old file-based storage, local test runs)
 data/
 
+# Excel sheets with team data
+sheets/IM_Group*
+
 # Vercel project link and pulled environment variables (contain secrets)
 .vercel/
 .env
@@ -17,3 +20,7 @@ desktop.ini
 .vscode/
 .idea/
 *.log
+
+# Impeccable working files (screenshots, mocks)
+.impeccable/review/
+.impeccable/mocks/
