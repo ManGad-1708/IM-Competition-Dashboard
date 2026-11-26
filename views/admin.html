@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Moderator desk — IM Competition</title>
-<link rel="preload" href="/assets/fonts/press-start-2p-400-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/assets/fonts/dotgothic16-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/chakra-petch-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/atkinson-hyperlegible-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/pixel.css">
 <style>
 /* Moderator desk: entry on the left, queue under it; decisions and results on the right. */
@@ -15,23 +15,25 @@
 /* ----- On course (entry) ----- */
 .match{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center;margin-bottom:14px}
 .side{padding:10px 12px;display:grid;gap:4px}
-.side.p1{background:var(--p1-tint)}
-.side.p2{background:var(--p2-tint)}
+.side{background:var(--well)}
+.side.p1{background:#fff;outline:2px solid var(--ink);outline-offset:-2px}
+.oncourse{display:inline-block;padding:2px 8px;background:var(--p1);color:#fff;font:700 13px/1.3 var(--ui)}
+.barlbl{font:700 15px var(--ui);color:var(--ink-2)}
 .side .who{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.side .no{font:400 24px/1 var(--px);color:var(--p1)}
-.side.p2 .no{font-size:18px;color:var(--p2)}
-.side .cursor{height:18px}
-.side .nm{font-size:22px;line-height:1.15;overflow-wrap:anywhere}
+.side .no{font:700 26px/1 var(--px);color:var(--ink)}
+.side.p2 .no{font-size:20px}
+.side .nm{font:700 22px/1.15 var(--ui);overflow-wrap:anywhere}
 .side.p2 .nm{font-size:18px}
 .side .beat{font-size:15px;color:var(--ink-2)}
-.side .beat .px{font-size:14px;color:var(--p2);margin-left:4px}
-.vs{font:400 12px/1 var(--px);padding:6px;background:var(--ink);color:#fff}
-.fields{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) minmax(0,1fr) minmax(0,.9fr);gap:10px;align-items:end}
-.fields label,.fields .lbl{display:block;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);margin-bottom:6px}
+.side .beat .px{font-size:17px;color:var(--ink);margin-left:4px}
+.vs{font:700 12px/1 var(--px);padding:6px;background:var(--ink);color:#fff}
+.fields{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr) minmax(0,1fr) minmax(0,.8fr);gap:10px;align-items:end}
+.fields label,.fields .lbl{display:block;font:700 15px/1.25 var(--ui);color:var(--ink);margin-bottom:6px}
+.fields label small,.fields .lbl small{display:block;font-weight:400;font-size:14px;color:var(--ink-2)}
 .row{display:flex;gap:6px}
-.row .btn{min-height:48px;padding:0 10px}
+.row .btn{min-height:48px;padding:0 12px}
 input[type=time]::-webkit-calendar-picker-indicator{display:none}
-.scoreval{font:400 22px/48px var(--px);color:var(--p1);white-space:nowrap}
+.scoreval{font:700 22px/48px var(--px);color:var(--p1);white-space:nowrap}
 .acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:center}
 .acts .spacer{flex:1}
 .empty{display:grid;justify-items:center;gap:8px;padding:12px 4px;text-align:center}
@@ -71,6 +73,8 @@ input[type=time]::-webkit-calendar-picker-indicator{display:none}
   .side{padding:8px}
   .side .no{font-size:18px}.side .nm{font-size:18px}
   .acts .btn{flex:1 1 auto}
+  .fields > div:first-child{grid-column:1/-1}
+  .menu a{flex:1 1 45%}
   .results .d-only{display:none}
 }
 </style>
@@ -78,15 +82,16 @@ input[type=time]::-webkit-calendar-picker-indicator{display:none}
 <body>
 <script>window.__ADMIN__=/*__ADMIN__*/false</script>
 <header class="hud">
-  <a class="logo" href="/admin"><b>Moderator desk</b><span>FM214 · Obstacle course</span></a>
+  <a class="logo" href="/admin"><b>IM Competition</b><span><span class="role">Moderator</span> Obstacle course scoring</span></a>
   <nav class="menu win" aria-label="Dashboards"></nav>
   <div class="status">
     <span class="live" role="status"><i></i><span>Live</span></span>
     <div class="admin-bar">
-      <label class="sr" for="focusSel">Stage being run</label>
-      <select id="focusSel" class="inp" style="min-height:40px;width:auto;font-size:16px;margin:0"></select>
-      <button type="button" class="btn sm" id="undo">Undo</button>
-      <a class="btn sm" href="/api/obstacle.csv">CSV</a>
+      <label for="focusSel" class="barlbl">Stage</label>
+      <select id="focusSel" class="inp" style="min-height:40px;width:auto;font-size:16px;margin:0" title="Which stage the queue follows. Automatic = the earliest unfinished stage."></select>
+      <button type="button" class="btn sm" id="undo" title="Nothing to undo" disabled>Undo</button>
+      <button type="button" class="btn sm" id="redo" title="Nothing to redo" disabled>Redo</button>
+      <a class="btn sm" href="/api/obstacle.csv" title="Download every result as a spreadsheet">Download CSV</a>
       <form method="post" action="/logout" style="margin:0"><button class="btn sm" type="submit">Log out</button></form>
     </div>
   </div>
@@ -120,7 +125,8 @@ function toast(text, kind) {
   el.innerHTML = `<div class="win"><p class="msg ${kind || ''}" style="margin:0">${esc(text)}</p></div>`;
   el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 4000);
 }
-function mutate(fn) { O.store.snap(); fn(D()); O.store.save(); O.recompute(); render(); }
+function mutate(fn, label) { O.store.snap(label); fn(D()); O.store.save(); O.recompute(); render(); }
+const who = t => `${O.tag(t)} ${O.tname(t)}`;
 function putRun(d, sid, team, run) { d.runs = d.runs || {}; d.runs[sid] = d.runs[sid] || {}; if (run === null) delete d.runs[sid][team]; else d.runs[sid][team] = run; }
 const clearCurrent = (d, team) => { if (d.current && d.current.team === team) d.current = null; };
 function confirmTap(btn, label) {
@@ -155,25 +161,26 @@ function renderEntry() {
   const dk = sid + ':' + team, dr = draftFor(dk, run);
   const a = parseNum(dr.d1), b = parseNum(dr.d2);
   const beat = oppRun && oppRun.status === 'done' ? `To beat<span class="px">${fmt(T.score(oppRun))}</span>` : oppRun && oppRun.status === 'forfeit' ? 'Did not start' : 'Not run yet';
-  el.innerHTML = `<h2 class="win-title" id="entryH">${done ? 'Editing result' : 'On course'}<span class="sub">${esc(st.name)} · Match ${esc(m ? m.no : '')} · ${st.done}/${st.total} run</span></h2>
+  el.innerHTML = `<h2 class="win-title" id="entryH">${done ? 'Edit result' : 'Score this run'}<span class="sub">${esc(st.name)} · Match ${esc(m ? m.no : '')} · ${st.done}/${st.total} run</span></h2>
     <div class="match">
-      <div class="side p1"><div class="who">${icon('cursor', 'cursor')}<span class="no">${O.tag(team)}</span>${O.seedTag(st, m, team)}</div><div class="nm">${esc(O.tname(team))}</div></div>
+      <div class="side p1"><div class="who"><span class="oncourse">${done ? 'Editing' : 'On course'}</span>${O.seedTag(st, m, team)}</div><span class="no">${O.tag(team)}</span><div class="nm">${esc(O.tname(team))}</div></div>
       <span class="vs" aria-label="versus">VS</span>
-      ${opp ? `<div class="side p2"><div class="who"><span class="no">${O.tag(opp)}</span></div><div class="nm">${esc(O.tname(opp))}</div><div class="beat">${beat}</div></div>` : '<div class="side p2"><div class="nm">Bye</div></div>'}
+      ${opp ? `<div class="side p2"><div class="who"><span class="dim">Opponent</span></div><span class="no">${O.tag(opp)}</span><div class="nm">${esc(O.tname(opp))}</div><div class="beat">${beat}</div></div>` : '<div class="side p2"><div class="nm">Bye</div><div class="beat">No opponent</div></div>'}
     </div>
     <div class="fields">
-      <div><label for="fStart">Start</label><div class="row"><input id="fStart" class="inp" type="time" value="${esc(dr.start)}" style="margin:0"><button type="button" class="btn" id="bNow" title="Stamp the current time">${icon('clock')}<span class="sr">Now</span></button></div></div>
-      <div><label for="fD1">T1 dist (cm)</label><input id="fD1" class="inp" inputmode="decimal" autocomplete="off" placeholder="0.0" value="${esc(dr.d1)}" style="margin:0"></div>
-      <div><label for="fD2">T2 dist (cm)</label><input id="fD2" class="inp" inputmode="decimal" autocomplete="off" placeholder="0.0" value="${esc(dr.d2)}" style="margin:0"></div>
-      <div><span class="lbl">T1 × T2</span><span class="scoreval" id="fScore">${ok(a) && ok(b) ? fmt(a * b) : '--'}</span></div>
+      <div><label for="fStart">Start time<small>when the run began</small></label><div class="row"><input id="fStart" class="inp" type="time" value="${esc(dr.start)}" style="margin:0"><button type="button" class="btn" id="bNow" title="Fill in the current time">Now</button></div></div>
+      <div><label for="fD1">T1 distance<small>object to T1, in cm</small></label><input id="fD1" class="inp" inputmode="decimal" autocomplete="off" placeholder="e.g. 4.5" value="${esc(dr.d1)}" style="margin:0"></div>
+      <div><label for="fD2">T2 distance<small>robot to T2, in cm</small></label><input id="fD2" class="inp" inputmode="decimal" autocomplete="off" placeholder="e.g. 12" value="${esc(dr.d2)}" style="margin:0"></div>
+      <div><span class="lbl">Score<small>T1 × T2, lower wins</small></span><span class="scoreval" id="fScore">${ok(a) && ok(b) ? fmt(a * b) : '--'}</span></div>
     </div>
     <div class="acts">
       <button type="button" class="btn go" id="bSave">${done ? 'Save changes' : 'Save result'}</button>
-      ${done ? '<button type="button" class="btn" id="bClear">Clear result</button>' : `<button type="button" class="btn" id="bSkip">${icon('skip')} Skip for now</button><button type="button" class="btn red" id="bDns">No-show</button>`}
+      ${done ? '<button type="button" class="btn" id="bClear" title="Delete this result; the team goes back into the queue">Delete result</button>' : '<button type="button" class="btn" id="bSkip" title="Team not ready: move them to the end of the queue">Not ready, run later</button>'}
       <span class="spacer"></span>
-      ${pinned ? `<button type="button" class="btn" id="bUnpin">${done ? 'Cancel' : 'Back to queue'}</button>` : ''}
+      ${pinned ? `<button type="button" class="btn" id="bUnpin">${done ? 'Cancel edit' : 'Back to normal order'}</button>` : ''}
+      ${done ? '' : '<button type="button" class="btn danger" id="bDns" title="Team did not turn up: they lose this match">No-show (loses match)</button>'}
     </div>
-    <p class="msg" id="msg">${done && later ? 'Later rounds are already drawn: changing this can change their match-ups.' : 'Type T1, Enter, T2, Enter to save.'}</p>`;
+    <p class="msg" id="msg">${done && later ? 'Later rounds are already drawn: changing this can change their match-ups.' : ''}</p>`;
   const upd = () => {
     dr.start = $('fStart').value; dr.d1 = $('fD1').value; dr.d2 = $('fD2').value;
     const x = parseNum(dr.d1), y = parseNum(dr.d2);
@@ -185,32 +192,32 @@ function renderEntry() {
   $('fD2').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('bSave').click(); } });
   $('bNow').onclick = () => {
     dr.start = hhmm(new Date()); $('fStart').value = dr.start;
-    if (!done) mutate(d => putRun(d, sid, team, Object.assign({}, O.runOf(sid, team), { start: dr.start, status: 'running' })));
+    if (!done) mutate(d => putRun(d, sid, team, Object.assign({}, O.runOf(sid, team), { start: dr.start, status: 'running' })), `start time ${dr.start} for ${who(team)}`);
   };
   $('bSave').onclick = () => {
     upd();
     const x = parseNum(dr.d1), y = parseNum(dr.d2);
     if (!ok(x) || !ok(y)) { $('msg').className = 'msg bad'; $('msg').textContent = 'Enter both distances as numbers (0 or more), e.g. 12.5.'; $(ok(x) ? 'fD2' : 'fD1').focus(); return; }
     const start = dr.start || (run && run.start) || hhmm(new Date());
-    mutate(d => { putRun(d, sid, team, { start, d1: x, d2: y, status: 'done', t: done && run.t ? run.t : Date.now() }); clearCurrent(d, team); });
+    mutate(d => { putRun(d, sid, team, { start, d1: x, d2: y, status: 'done', t: done && run.t ? run.t : Date.now() }); clearCurrent(d, team); }, `${done ? 'edited result' : 'result'} for ${who(team)} (${fmt(x)} × ${fmt(y)} = ${fmt(x * y)})`);
     delete drafts[dk];
     toast(`${O.tag(team)} ${O.tname(team)}: ${fmt(x)} × ${fmt(y)} = ${fmt(x * y)} saved.`, 'ok');
     const f = $('fD1'); if (f) f.focus();
   };
   if ($('bSkip')) $('bSkip').onclick = () => {
-    mutate(d => { putRun(d, sid, team, Object.assign({}, O.runOf(sid, team), { status: 'skip', skipT: Date.now() })); clearCurrent(d, team); });
-    toast(`${O.tag(team)} moved to “come back later”.`);
+    mutate(d => { putRun(d, sid, team, Object.assign({}, O.runOf(sid, team), { status: 'skip', skipT: Date.now() })); clearCurrent(d, team); }, `${who(team)} moved to run later`);
+    toast(`${O.tag(team)} will run later. They're in the “Run later” list.`);
   };
   if ($('bDns')) $('bDns').onclick = e => {
-    if (!confirmTap(e.currentTarget, 'Tap again: no-show')) return;
-    mutate(d => { putRun(d, sid, team, { start: dr.start || '', status: 'forfeit', t: Date.now() }); clearCurrent(d, team); });
+    if (!confirmTap(e.currentTarget, 'Tap again to confirm no-show')) return;
+    mutate(d => { putRun(d, sid, team, { start: dr.start || '', status: 'forfeit', t: Date.now() }); clearCurrent(d, team); }, `no-show for ${who(team)}`);
     delete drafts[dk];
   };
   if ($('bClear')) $('bClear').onclick = e => {
-    if (!confirmTap(e.currentTarget, 'Tap again to clear')) return;
-    delete drafts[dk]; mutate(d => putRun(d, sid, team, null));
+    if (!confirmTap(e.currentTarget, 'Tap again to delete')) return;
+    delete drafts[dk]; mutate(d => putRun(d, sid, team, null), `deleted result of ${who(team)}`);
   };
-  if ($('bUnpin')) $('bUnpin').onclick = () => { delete drafts[dk]; mutate(d => { d.current = null; }); };
+  if ($('bUnpin')) $('bUnpin').onclick = () => { delete drafts[dk]; mutate(d => { d.current = null; }, `back to normal order (left ${who(team)})`); };
 }
 
 function renderQueue() {
@@ -218,24 +225,24 @@ function renderQueue() {
   const cur = B.current && B.current.team;
   const pending = (st.queue || []).filter(t => t !== cur && !(st.skipped || []).includes(t));
   const skipped = (st.skipped || []).filter(t => t !== cur);
-  const li = t => { const { m, opp } = T.teamResult(st, t); return `<li><span class="px">${O.tag(t)}</span><span>${esc(O.tname(t))}<small>Match ${esc(m ? m.no : '')}${opp ? ' · vs ' + O.tag(opp) : ''}</small></span><button type="button" class="btn sm" data-call="${esc(t)}" data-stage="${st.id}">Call up</button></li>`; };
-  $('queue').innerHTML = `<h2 class="win-title">Queue<span class="sub">${esc(st.name)} · ${pending.length} waiting</span></h2>
+  const li = t => { const { m, opp } = T.teamResult(st, t); return `<li><span class="px">${O.tag(t)}</span><span>${esc(O.tname(t))}<small>Match ${esc(m ? m.no : '')}${opp ? ' · vs ' + O.tag(opp) : ''}</small></span><button type="button" class="btn sm" data-call="${esc(t)}" data-stage="${st.id}" title="Put this team on course now">Run now</button></li>`; };
+  $('queue').innerHTML = `<h2 class="win-title">Up next<span class="sub">${esc(st.name)} · ${pending.length} waiting</span></h2>
     ${pending.length ? `<ol class="q">${pending.slice(0, 6).map(li).join('')}</ol>${pending.length > 6 ? `<p class="msg">+ ${pending.length - 6} more in match order</p>` : ''}` : '<p class="msg">Nobody else waiting.</p>'}
-    ${skipped.length ? `<h3 class="qh">Come back later · ${skipped.length}</h3><ul class="q">${skipped.map(li).join('')}</ul>` : ''}`;
+    ${skipped.length ? `<h3 class="qh">Run later (skipped) · ${skipped.length}</h3><ul class="q">${skipped.map(li).join('')}</ul>` : ''}`;
 }
 
 function renderDecide() {
   const B = O.B, el = $('decide'), items = [];
   B.stages.forEach(st => {
     (st.ties || []).forEach(m => items.push(`<li><span><b>${esc(st.name)} · Match ${esc(m.no)}</b>: ${O.tag(m.a)} and ${O.tag(m.b)} ${m.sa === Infinity ? 'were both no-shows' : 'both scored ' + fmt(m.sa)}. Who goes through?</span>
-      <span class="acts"><button type="button" class="btn sm go" data-pick="${esc(m.key)}" data-team="${esc(m.a)}">${O.tag(m.a)} wins</button><button type="button" class="btn sm go" data-pick="${esc(m.key)}" data-team="${esc(m.b)}">${O.tag(m.b)} wins</button></span></li>`));
+      <span class="acts"><button type="button" class="btn sm go" data-pick="${esc(m.key)}" data-team="${esc(m.a)}">${O.tag(m.a)} goes through</button><button type="button" class="btn sm go" data-pick="${esc(m.key)}" data-team="${esc(m.b)}">${O.tag(m.b)} goes through</button></span></li>`));
     if (st.wildcardTie) items.push(`<li><span><b>Qualifying wildcard</b>: these teams tied for the best non-winning score. Pick one.</span>
       <span class="acts">${st.wildcardTie.teams.map(t => `<button type="button" class="btn sm go" data-pick="${esc(st.wildcardTie.key)}" data-team="${esc(t)}">${O.tag(t)}</button>`).join('')}</span></li>`);
   });
   const warns = (O.sheets.warnings || []).map(w => `<li class="warn">${esc(w)}</li>`);
   el.hidden = !items.length && !warns.length;
-  el.innerHTML = (items.length ? `<h2 class="win-title">Needs a decision<span class="sub">${items.length} tie${items.length > 1 ? 's' : ''}</span></h2><ul>${items.join('')}</ul>` : '')
-    + (warns.length ? `<h2 class="win-title" style="margin-top:${items.length ? 14 : 0}px">Sheet check</h2><ul>${warns.join('')}</ul>` : '');
+  el.innerHTML = (items.length ? `<h2 class="win-title">Tie: you choose the winner<span class="sub">${items.length} waiting</span></h2><ul>${items.join('')}</ul>` : '')
+    + (warns.length ? `<h2 class="win-title" style="margin-top:${items.length ? 14 : 0}px">Problems in the Excel sheets</h2><ul>${warns.join('')}</ul>` : '');
 }
 
 function renderResults() {
@@ -255,10 +262,10 @@ function renderResults() {
       <td class="team"><span class="px">${O.tag(x.t)}</span>${esc(O.tname(x.t))}</td>
       <td class="d-only r">${x.r.status === 'done' ? fmt(x.r.d1) : ''}</td><td class="d-only r">${x.r.status === 'done' ? fmt(x.r.d2) : ''}</td>
       <td class="r"><span class="px">${O.scoreText(rs[x.t])}</span></td><td>${O.resultTag(sel, x.t)}</td>
-      <td class="act"><button type="button" class="btn sm" data-call="${esc(x.t)}" data-stage="${sel.id}">${acted ? icon('pencil') + ' Edit' : 'Call up'}</button></td></tr>`;
+      <td class="act"><button type="button" class="btn sm" data-call="${esc(x.t)}" data-stage="${sel.id}" title="${acted ? 'Change this result' : 'Put this team on course now'}">${acted ? 'Edit' : 'Run now'}</button></td></tr>`;
   }).join('');
   const tabs = open.length > 1 ? `<div class="tabs" role="tablist" aria-label="Stage">${open.map(s => `<button type="button" role="tab" class="btn" data-tab="${s.id}" aria-selected="${s.id === sel.id}" aria-pressed="${s.id === sel.id}">${esc(s.short)}</button>`).join('')}</div>` : '';
-  $('results').innerHTML = `<h2 class="win-title">Results<span class="sub">${esc(sel.name)}</span></h2>${tabs}
+  $('results').innerHTML = `<h2 class="win-title">All results<span class="sub">${esc(sel.name)} · Edit fixes a result</span></h2>${tabs}
     <table><thead><tr><th>#</th><th>Team</th><th class="d-only r">T1</th><th class="d-only r">T2</th><th class="r">Score</th><th><span class="sr">Result</span></th><th><span class="sr">Action</span></th></tr></thead><tbody>${body}</tbody></table>`;
 }
 
@@ -266,21 +273,37 @@ function renderFocus() {
   const sel = $('focusSel');
   if (document.activeElement === sel) return;
   const B = O.B, open = B.stages.filter(s => s.status !== 'locked');
-  sel.innerHTML = `<option value="">Auto: ${esc(B.active.short)}</option>` + open.map(s => `<option value="${s.id}"${D().focus === s.id ? ' selected' : ''}>Run ${esc(s.short)}</option>`).join('');
+  sel.innerHTML = `<option value="">Automatic (${esc(B.active.name)})</option>` + open.map(s => `<option value="${s.id}"${D().focus === s.id ? ' selected' : ''}>${esc(s.name)}</option>`).join('');
 }
 
-function render() { renderEntry(); renderQueue(); renderDecide(); renderResults(); renderFocus(); }
+function render() { renderEntry(); renderQueue(); renderDecide(); renderResults(); renderFocus(); renderHistory(); }
 
 document.addEventListener('click', e => {
   const c = e.target.closest('[data-call]');
-  if (c) { mutate(d => { d.current = { stage: c.dataset.stage, team: c.dataset.call }; }); window.scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(() => { const f = $('fD1'); if (f) f.focus(); }, 50); return; }
+  if (c) { mutate(d => { d.current = { stage: c.dataset.stage, team: c.dataset.call }; }, `${who(c.dataset.call)} put on course`); window.scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(() => { const f = $('fD1'); if (f) f.focus(); }, 50); return; }
   const p = e.target.closest('[data-pick]');
-  if (p) return mutate(d => { d.picks = d.picks || {}; d.picks[p.dataset.pick] = p.dataset.team; });
+  if (p) return mutate(d => { d.picks = d.picks || {}; d.picks[p.dataset.pick] = p.dataset.team; }, `tie decided: ${who(p.dataset.team)} goes through`);
   const tb = e.target.closest('[data-tab]');
   if (tb) { resultsStage = tb.dataset.tab; renderResults(); }
 });
-$('focusSel').addEventListener('change', e => mutate(d => { d.focus = e.target.value || null; d.current = null; }));
-$('undo').onclick = () => { if (O.store.undo()) { O.recompute(); render(); } else toast('Nothing to undo.'); };
+$('focusSel').addEventListener('change', e => mutate(d => { d.focus = e.target.value || null; d.current = null; }, `stage set to ${e.target.value ? T.byId[e.target.value].name : 'automatic'}`));
+function history(dir) {
+  const label = dir === 'undo' ? O.store.undo() : O.store.redo();
+  if (!label) return toast(dir === 'undo' ? 'Nothing to undo.' : 'Nothing to redo.');
+  drafts = {}; O.recompute(); render();
+  toast(`${dir === 'undo' ? 'Undone' : 'Redone'}: ${label}`, 'ok');
+}
+function renderHistory() {
+  const h = O.store.peek();
+  $('undo').disabled = !h.undo; $('undo').title = h.undo ? 'Undo: ' + h.undo + ' (Ctrl/⌘+Z)' : 'Nothing to undo';
+  $('redo').disabled = !h.redo; $('redo').title = h.redo ? 'Redo: ' + h.redo + ' (Ctrl/⌘+Shift+Z)' : 'Nothing to redo';
+}
+$('undo').onclick = () => history('undo');
+$('redo').onclick = () => history('redo');
+document.addEventListener('keydown', e => {
+  if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 'z' || e.target.matches('input,textarea,select')) return;
+  e.preventDefault(); history(e.shiftKey ? 'redo' : 'undo');
+});
 O.start({
   render,
   onConflict: () => toast('Another moderator saved at the same time. Showing the latest; check your last change.', 'bad'),

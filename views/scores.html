@@ -4,12 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Obstacle Course — IM Competition</title>
-<link rel="preload" href="/assets/fonts/press-start-2p-400-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/assets/fonts/dotgothic16-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/chakra-petch-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/atkinson-hyperlegible-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/pixel.css">
 <style>
 /* Public scoreboard: read-only. One column, three windows: last results, now playing, leaderboard. */
-main.page.viewer,.viewer-body .hud{max-width:1080px}
+main.page.viewer,.viewer-body .hud{max-width:1240px}
+.stage-row{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:16px;align-items:start}
+.q{list-style:none;margin:0;padding:0}
+.q li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;align-items:baseline;padding:10px 0;border-top:2px solid var(--well)}
+.q li:first-child{border-top:0;padding-top:0}
+.q .px{font-size:20px}
+.q b{font:700 20px/1.2 var(--ui);overflow-wrap:anywhere}
+.q small{grid-column:2;color:var(--ink-2);font-size:15px}
+.q .first .px,.q .first b{color:var(--p1)}
+.qh{margin:16px 0 6px;font:700 15px var(--ui);color:var(--ink-2)}
+@media (max-width:900px){.stage-row{grid-template-columns:minmax(0,1fr)}}
 
 /* ----- Last results ----- */
 .log ol{list-style:none;margin:0;padding:0}
@@ -19,27 +29,27 @@ main.page.viewer,.viewer-body .hud{max-width:1080px}
 .rc b{font-size:19px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rc b small{font-size:15px;color:var(--ink-2);margin-left:10px}
 .rc .det{color:var(--ink-2);font-size:16px;white-space:nowrap}
-.rc .sc{font:400 16px/1 var(--px);text-align:right}
+.rc .sc{font:700 16px/1 var(--px);text-align:right}
 .rc .res{justify-self:end}
 .rc.pop .sc{animation:rise .9s steps(6) both}
 @keyframes rise{0%{transform:translateY(10px);color:var(--p1)}60%{transform:translateY(-3px);color:var(--p1)}100%{transform:none}}
 .none{margin:0;color:var(--ink-2)}
 
 /* ----- Now playing ----- */
-.faceoff{display:grid;grid-template-columns:minmax(0,1.4fr) auto minmax(0,1fr);gap:14px;align-items:stretch}
+.faceoff{display:grid;grid-template-columns:minmax(0,1.3fr) auto minmax(0,1fr);gap:12px;align-items:stretch}
 .fighter{display:grid;gap:6px;align-content:start;padding:12px 14px}
-.fighter.p1{background:var(--p1-tint)}
-.fighter.p2{background:var(--p2-tint)}
+.fighter{background:var(--well)}
+.fighter.p1{background:#fff;outline:2px solid var(--ink);outline-offset:-2px}
 .fighter .who{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.fighter .no{font:400 36px/1 var(--px);color:var(--p1)}
-.fighter.p2 .no{font-size:22px;color:var(--p2)}
-.fighter .cursor{height:24px}
-.fighter .nm{font-size:30px;line-height:1.15;overflow-wrap:anywhere}
+.fighter .no{font:700 40px/1 var(--px);color:var(--ink)}
+.fighter.p2 .no{font-size:26px}
+.oncourse{display:inline-block;padding:3px 8px;background:var(--p1);color:#fff;font:700 14px/1.2 var(--ui)}
+.fighter .nm{font:700 30px/1.15 var(--ui);overflow-wrap:anywhere}
 .fighter.p2 .nm{font-size:22px}
 .fighter .mem{font-size:16px;color:var(--ink-2)}
 .fighter .beat{font-size:16px;color:var(--ink-2)}
-.fighter .beat .px{font-size:16px;color:var(--p2);margin-left:6px}
-.vsbig{align-self:center;font:400 18px/1 var(--px);padding:8px;background:var(--ink);color:#fff}
+.fighter .beat .px{font-size:18px;color:var(--ink);margin-left:6px}
+.vsbig{align-self:center;font:700 18px/1 var(--px);padding:8px;background:var(--ink);color:#fff}
 .nowline{display:flex;flex-wrap:wrap;gap:6px 24px;margin:14px 0 0;color:var(--ink-2);font-size:17px}
 .nowline b{color:var(--ink);font-weight:400}
 .nowline .px{font-size:14px;color:var(--ink)}
@@ -59,7 +69,7 @@ main.page.viewer,.viewer-body .hud{max-width:1080px}
 .board .rank{width:56px}
 .board .rank .px{font-size:14px}
 .board .team .px{font-size:12px;color:var(--ink-2);margin-right:10px}
-.board .scorec{font:400 15px/1 var(--px)}
+.board .scorec{font:700 15px/1 var(--px)}
 .board .dist{color:var(--ink-2)}
 .board .team small{display:none}
 .board-foot{margin:10px 0 0;color:var(--ink-2);font-size:15px}
@@ -73,7 +83,6 @@ main.page.viewer,.viewer-body .hud{max-width:1080px}
   .fighter .no,.fighter.p2 .no{font-size:18px}
   .fighter .nm,.fighter.p2 .nm{font-size:19px}
   .fighter .mem{display:none}
-  .fighter .cursor{height:16px}
   .fighter .beat,.fighter .beat .px{font-size:14px}
   .vsbig{font-size:11px;padding:5px}
   .board .d-only{display:none}
@@ -92,7 +101,10 @@ main.page.viewer,.viewer-body .hud{max-width:1080px}
 
 <main class="page viewer">
   <section class="win log" id="recent" aria-labelledby="recentH"></section>
-  <section class="win p1 now" id="now" aria-live="polite"></section>
+  <div class="stage-row">
+    <section class="win p1 now" id="now" aria-live="polite"></section>
+    <section class="win next" id="next" aria-labelledby="nextH"></section>
+  </div>
   <section class="win board" id="board"></section>
 </main>
 
@@ -140,18 +152,25 @@ function renderNow() {
   const oppRun = opp ? O.runOf(sid, opp) : null;
   const beat = oppRun && oppRun.status === 'done' ? `Score to beat<span class="px">${fmt(T.score(oppRun))}</span>` : oppRun && oppRun.status === 'forfeit' ? 'Did not start' : 'Not run yet';
   const p2 = opp
-    ? `<div class="fighter p2"><div class="who"><span class="no">${O.tag(opp)}</span>${O.seedTag(st, m, opp)}</div><div class="nm">${esc(O.tname(opp))}</div><div class="beat">${beat}</div></div>`
+    ? `<div class="fighter p2"><div class="who"><span class="dim">Opponent</span>${O.seedTag(st, m, opp)}</div><span class="no">${O.tag(opp)}</span><div class="nm">${esc(O.tname(opp))}</div><div class="beat">${beat}</div></div>`
     : `<div class="fighter p2"><div class="nm">Bye</div><div class="beat">No opponent this round</div></div>`;
-  const next = B.next.map(x => `<b>${O.tag(x.team)}</b> ${esc(O.tname(x.team))}`).join(' · ');
-  const later = (st.skipped || []).filter(t => t !== team);
   el.innerHTML = `<h2 class="win-title">Now playing<span class="sub">${esc(st.name)} · Match ${esc(m ? m.no : '')} · ${st.done}/${st.total} run</span></h2>
     <div class="faceoff">
-      <div class="fighter p1"><div class="who">${icon('cursor', 'cursor')}<span class="no">${O.tag(team)}</span>${O.seedTag(st, m, team)}</div>
+      <div class="fighter p1"><div class="who"><span class="oncourse">On course</span>${O.seedTag(st, m, team)}</div><span class="no">${O.tag(team)}</span>
         <div class="nm">${esc(O.tname(team))}</div>${O.members(team) ? `<div class="mem">${esc(O.members(team))}</div>` : ''}</div>
       <span class="vsbig" aria-label="versus">VS</span>${p2}
     </div>
-    <p class="nowline">${run && run.start ? `<span>Started <span class="px">${esc(run.start)}</span></span>` : ''}
-      ${next ? `<span>Up next: ${next}</span>` : ''}${later.length ? `<span>Coming back later: ${later.map(O.tag).join(', ')}</span>` : ''}</p>`;
+    ${run && run.start ? `<p class="nowline"><span>Started at <span class="px">${esc(run.start)}</span></span></p>` : ''}`;
+}
+
+function renderNext() {
+  const B = O.B, st = B.current ? B.S[B.current.stage] : B.active, cur = B.current && B.current.team;
+  const later = (st.skipped || []).filter(t => t !== cur);
+  const pending = (st.queue || []).filter(t => t !== cur && !later.includes(t)).slice(0, 4);
+  const li = (t, i) => { const { m, opp } = T.teamResult(st, t); return `<li class="${i === 0 ? 'first' : ''}"><span class="px">${O.tag(t)}</span><b>${esc(O.tname(t))}</b><small>${i === 0 ? 'Get ready · ' : ''}Match ${esc(m ? m.no : '')}${opp ? ' vs ' + O.tag(opp) : ''}</small></li>`; };
+  $('next').innerHTML = `<h2 class="win-title" id="nextH">Up next</h2>`
+    + (pending.length ? `<ol class="q">${pending.map(li).join('')}</ol>` : '<p class="none">Nobody else waiting in this stage.</p>')
+    + (later.length ? `<h3 class="qh">Running later</h3><ul class="q">${later.map(t => li(t, 1)).join('')}</ul>` : '');
 }
 
 function renderBoard() {
@@ -189,7 +208,7 @@ document.addEventListener('click', e => {
   const tb = e.target.closest('[data-tab]');
   if (tb) { boardStage = tb.dataset.tab; renderBoard(); }
 });
-O.start({ render: () => { renderRecent(); renderNow(); renderBoard(); } });
+O.start({ render: () => { renderRecent(); renderNow(); renderNext(); renderBoard(); } });
 })();
 </script>
 </body>

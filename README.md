@@ -57,7 +57,7 @@ The desk is a separate page from the public scoreboard: students never see its c
 
 - **Storage:** Upstash Redis via its REST API. Obstacle Course and Speed Track are separate keys, each saved with an atomic compare-and-set on a revision number, so two operators can't silently overwrite each other.
 - **Live updates:** screens poll every 1.5 s (paused in hidden tabs); responses are cached at Vercel's edge for 1 s.
-- **Login:** one operator password in `ADMIN_PASSWORD`; an HttpOnly cookie for 30 days.
+- **Login:** one moderator password in `ADMIN_PASSWORD`. A successful login sets a signed, HttpOnly, SameSite=Strict session cookie that expires after 12 hours (`SESSION_HOURS`). Five wrong passwords from one address lock it out for 10 minutes. Changing the password (or `SESSION_SECRET`) logs everyone out. Every save is checked on the server, so the public pages can never write.
 - No npm dependencies.
 
 ## Environment variables
@@ -81,10 +81,11 @@ Never commit these. `.env*` files and `.vercel/` are git-ignored.
 Node 18 or newer:
 
 ```
-ADMIN_PASSWORD=test node local.js
+echo 'ADMIN_PASSWORD=pick-a-password' > .env.local
+node local.js
 ```
 
-Open http://localhost:3000. Without the Redis variables, data is kept in memory and lost when you stop the server; without `ADMIN_PASSWORD`, the operator pages open without a login (local only).
+Open http://localhost:3000. Without the Redis variables, data is kept in memory and lost when you stop the server. The moderator pages always need the password, locally too; with no `ADMIN_PASSWORD` set they stay locked.
 
 ## Speed Track event day
 

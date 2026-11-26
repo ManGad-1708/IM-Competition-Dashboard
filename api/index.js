@@ -26,7 +26,17 @@ const PAGE_CACHE = Object.fromEntries(Object.entries(PAGE_FILES).map(([k, f]) =>
 const PAGES = new Proxy(PAGE_CACHE, { get: (c, k) => (ON_VERCEL ? c[k] : read(PAGE_FILES[k])) });
 const asAdmin = html => html.replace('/*__ADMIN__*/false', 'true');
 const ASSET_TYPES = { '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.woff2': 'font/woff2', '.svg': 'image/svg+xml', '.png': 'image/png' };
-const TOKEN = crypto.createHmac('sha256', 'speed-comp:' + PASSWORD).update('admin-session').digest('hex');
+// Sessions: "<expiry>.<hmac>" signed with SESSION_SECRET (or a key derived from the password),
+// so changing the password logs every moderator out, and a session expires after SESSION_HOURS.
+const SESSION_HOURS = +process.env.SESSION_HOURS || 12;
+const SECRET = process.env.SESSION_SECRET || crypto.createHash('sha256').update('im-comp-session:' + PASSWORD).digest('hex');
+const sign = exp => crypto.createHmac('sha256', SECRET).update('moderator:' + exp).digest('hex');
+const newSession = () => { const exp = Date.now() + SESSION_HOURS * 3600e3; return exp + '.' + sign(exp); };
+// Login throttling: 5 wrong passwords from one address locks it out for 10 minutes (per server instance).
+const FAILS = new Map();
+const clientIp = req => String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+function lockedOut(ip) { const f = FAILS.get(ip); return f && f.n >= 5 && Date.now() - f.t < 10 * 60e3; }
+function noteFail(ip) { const f = FAILS.get(ip); const fresh = !f || Date.now() - f.t > 10 * 60e3; FAILS.set(ip, { n: fresh ? 1 : f.n + 1, t: Date.now() }); }
 
 // ---------- storage: Upstash Redis REST, or memory when running locally without Redis ----------
 const mem = { speed: { rev: 0, data: null }, obstacle: { rev: 0, data: null } };
@@ -77,8 +87,9 @@ function same(a, b) {
   return x.length === y.length && crypto.timingSafeEqual(x, y);
 }
 function isAdmin(req) {
-  if (!PASSWORD) return !ON_VERCEL;
-  return same(cookies(req).sc_admin || '', TOKEN);
+  if (!PASSWORD) return false; // no password set = nobody can edit, locally too
+  const [exp, mac] = String(cookies(req).sc_admin || '').split('.');
+  return !!mac && +exp > Date.now() && same(mac, sign(exp));
 }
 function send(res, code, body, type = 'text/html; charset=utf-8', extra = {}) {
   res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...extra });
@@ -134,13 +145,14 @@ const shell = (title, body) => `<!DOCTYPE html><html lang="en"><head><meta chars
 <title>${title}</title><link rel="stylesheet" href="/assets/pixel.css"></head><body class="center-screen">${body}</body></html>`;
 const escHtml = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const safeNext = n => (/^\/admin(\/speed)?$/.test(n || '') ? n : '/admin');
-const loginPage = (err = '', next = '/admin') => shell('Operator login — IM Competition', `
+const loginPage = (err = '', next = '/admin') => shell('Moderator login — IM Competition', `
 <form method="post" action="/login" class="win login">
-  <h1 class="win-title">Operator login</h1>
+  <h1 class="win-title">Moderator login</h1>
+  <p class="dim" style="margin:0">Only course staff can enter scores. Students can follow everything on the public pages.</p>
   ${err ? `<p class="msg bad" role="alert">${escHtml(err)}</p>` : ''}
   <input type="hidden" name="next" value="${escHtml(safeNext(next))}">
   <label class="field">Password<input type="password" name="password" autofocus required autocomplete="current-password"></label>
-  <button type="submit" class="btn go">Press start</button>
+  <button type="submit" class="btn go">Log in</button>
   <p class="dim small">Just watching? <a href="/">Open the scoreboard</a></p>
 </form>`);
 const noticePage = msg => shell('IM Competition', `<div class="win login"><h1 class="win-title">IM Competition</h1><p>${msg}</p></div>`);
@@ -173,7 +185,7 @@ module.exports = async (req, res) => {
       if (!/^[\w./-]+$/.test(f) || f.includes('..') || !ASSET_TYPES[ext]) return send(res, 404, 'Not found', 'text/plain');
       let body;
       try { body = fs.readFileSync(path.join(VIEWS, f)); } catch { return send(res, 404, 'Not found', 'text/plain'); }
-      const cache = ext === '.woff2' ? 'public, max-age=31536000, immutable' : 'public, max-age=60, s-maxage=300';
+      const cache = !ON_VERCEL ? 'no-store' : ext === '.woff2' ? 'public, max-age=31536000, immutable' : 'public, max-age=60, s-maxage=300';
       return send(res, 200, body, ASSET_TYPES[ext], { 'Cache-Control': cache });
     }
     if (m === 'GET' && route === 'health') return send(res, 200, 'ok', 'text/plain');
@@ -185,22 +197,26 @@ module.exports = async (req, res) => {
     if (m === 'GET' && route === 'speed') return send(res, 200, PAGES.speed);
     if (m === 'GET' && (route === 'admin' || route === 'admin-speed')) {
       const next = route === 'admin' ? '/admin' : '/admin/speed';
-      if (!PASSWORD && ON_VERCEL) return send(res, 503, loginPage('Set ADMIN_PASSWORD in Vercel → Settings → Environment Variables, then redeploy.', next));
+      if (!PASSWORD) return send(res, 503, loginPage(ON_VERCEL ? 'The moderator password is not set. Add ADMIN_PASSWORD in Vercel → Settings → Environment Variables, then redeploy.' : 'The moderator password is not set. Put ADMIN_PASSWORD=… in .env.local and restart.', next));
       if (!isAdmin(req)) return send(res, 200, loginPage('', next));
       return send(res, 200, asAdmin(route === 'admin' ? PAGES.admin : PAGES.speed));
     }
     if (m === 'POST' && route === 'login') {
       const body = asParams(await readBody(req, 1e4));
       const next = safeNext(body.get('next'));
+      const ip = clientIp(req);
+      if (lockedOut(ip)) return send(res, 429, loginPage('Too many wrong passwords. Try again in 10 minutes.', next));
       if (PASSWORD && same(body.get('password') || '', PASSWORD)) {
+        FAILS.delete(ip);
         const secure = ON_VERCEL || (req.headers['x-forwarded-proto'] || '').includes('https') ? '; Secure' : '';
-        return send(res, 303, '', 'text/plain', { Location: next, 'Set-Cookie': `sc_admin=${TOKEN}; HttpOnly; Path=/; SameSite=Lax; Max-Age=2592000${secure}` });
+        return send(res, 303, '', 'text/plain', { Location: next, 'Set-Cookie': `sc_admin=${newSession()}; HttpOnly; Path=/; SameSite=Strict; Max-Age=${SESSION_HOURS * 3600}${secure}` });
       }
-      await new Promise(r => setTimeout(r, 600));
+      noteFail(ip);
+      await new Promise(r => setTimeout(r, 800));
       return send(res, 401, loginPage('Wrong password.', next));
     }
     if (m === 'POST' && route === 'logout') {
-      return send(res, 303, '', 'text/plain', { Location: '/', 'Set-Cookie': 'sc_admin=; HttpOnly; Path=/; Max-Age=0' });
+      return send(res, 303, '', 'text/plain', { Location: '/', 'Set-Cookie': 'sc_admin=; HttpOnly; Path=/; SameSite=Strict; Max-Age=0' });
     }
 
     if (m === 'GET' && route === 'sheets') {

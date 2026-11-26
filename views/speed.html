@@ -11,18 +11,18 @@
 .pc{display:grid;gap:4px;padding:10px 12px}
 .pc span{font:600 14px/1.2 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
 .pc b{font:700 24px/1.15 var(--ui);overflow-wrap:anywhere}
-.pc em{font:400 20px/1.2 var(--px);font-style:normal;color:var(--c)}
+.pc em{font:700 20px/1.2 var(--px);font-style:normal;color:var(--c)}
 .pc[data-p="1"]{--c:var(--gold-ink)}.pc[data-p="2"]{--c:var(--ink-2)}.pc[data-p="3"]{--c:#8a4f1c}
 .sheet{padding:10px 12px}
 .hd,.tr{display:grid;grid-template-columns:96px 80px minmax(0,1fr) 110px 100px;gap:12px;align-items:center;padding:0 10px}
 .hd{min-height:36px;font:600 14px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
 .tr{min-height:60px;margin-top:4px;background:var(--well);position:relative}
-.st{font:400 16px/1 var(--px);white-space:nowrap}
-.no{font:400 14px/1 var(--px);color:var(--ink-2)}
+.st{font:700 16px/1 var(--px);white-space:nowrap}
+.no{font:700 14px/1 var(--px);color:var(--ink-2)}
 .nm{font-size:20px;font-weight:700;overflow-wrap:anywhere;line-height:1.2}
-.lp{font:400 22px/1 var(--px);text-align:right;white-space:nowrap}
+.lp{font:700 22px/1 var(--px);text-align:right;white-space:nowrap}
 .ps{justify-self:end}
-.ps:not(:empty){display:inline-flex;padding:2px 6px;border:3px solid transparent;border-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3' height='3' shape-rendering='crispEdges'%3E%3Cpath fill='%23e3e9ff' d='M1 0h1v3H1zM0 1h3v1H0z'/%3E%3C/svg%3E") 1 fill / 3px / 0 stretch;font:700 14px/1.2 var(--ui);letter-spacing:.06em;text-transform:uppercase}
+.ps:not(:empty){display:inline-flex;padding:2px 6px;border:3px solid transparent;border-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3' height='3' shape-rendering='crispEdges'%3E%3Cpath fill='%23e3e9ff' d='M1 0h1v3H1zM0 1h3v1H0z'/%3E%3C/svg%3E") 1 / 3px / 0 stretch;font:700 14px/1.2 var(--ui);letter-spacing:.06em;text-transform:uppercase;background:#e3e9ff padding-box}
 .tr[data-p="1"]{background:var(--gold-tint)}
 .tr[data-p="2"]{background:#eceff7}
 .tr[data-p="3"]{background:#fbe8d8}
@@ -38,12 +38,12 @@
 .legend{display:flex;flex-wrap:wrap;gap:8px 16px;color:var(--ink-2);font-size:15px;padding:10px 4px 0}
 .legend i{display:inline-block;width:14px;height:14px;margin-right:6px;vertical-align:-2px;border:2px solid var(--ink)}
 .empty{padding:28px 10px;text-align:center;color:var(--ink-2)}
-.desk h2{margin:0 0 12px;font:400 14px/1.3 var(--px)}
+.desk h2{margin:0 0 12px;font:700 14px/1.3 var(--px)}
 .grid4{display:grid;grid-template-columns:150px 130px minmax(0,1fr) auto;gap:12px;align-items:end}
 .desk label{display:block;font:400 15px/1.4 var(--ui);color:var(--ink-2)}
 .desk label input,.desk label textarea,.ctl input{display:block;width:100%;margin-top:6px;min-height:48px;padding:4px 8px;border:6px solid transparent;
-  border-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='5' shape-rendering='crispEdges'%3E%3Cpath fill='%231b2142' d='M1 0h3v1H1zM0 1h1v3H0zM4 1h1v3H4zM1 4h3v1H1z'/%3E%3Cpath fill='%23c6d0f3' d='M1 1h3v1H1zM1 2h1v2H1z'/%3E%3Cpath fill='%23fff' d='M2 2h2v2H2z'/%3E%3C/svg%3E") 2 fill / 6px / 0 stretch;
-  background:none;color:var(--ink);font:600 20px/1.2 var(--ui);text-transform:none;letter-spacing:0;caret-color:var(--p1)}
+  border-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='5' shape-rendering='crispEdges'%3E%3Cpath fill='%231b2142' d='M1 0h3v1H1zM0 1h1v3H0zM4 1h1v3H4zM1 4h3v1H1z'/%3E%3Cpath fill='%23c6d0f3' d='M1 1h3v1H1zM1 2h1v2H1z'/%3E%3Cpath fill='%23fff' d='M2 2h2v2H2z'/%3E%3C/svg%3E") 2 / 6px / 0 stretch;
+  background:#fff padding-box;color:var(--ink);font:600 20px/1.2 var(--ui);text-transform:none;letter-spacing:0;caret-color:var(--p1)}
 .desk label textarea{font-size:17px;line-height:1.35}
 .ctl input{width:96px;margin:0}
 .acts{display:flex;flex-wrap:wrap;gap:8px}
@@ -54,7 +54,7 @@ summary{cursor:pointer;color:var(--ink);min-height:36px;font-weight:700;letter-s
 summary::marker{color:var(--p1)}
 .auto .grid4{grid-template-columns:repeat(4,minmax(0,1fr))}
 .sumr{display:flex;flex-wrap:wrap;gap:8px 24px;margin:14px 0 6px;font-size:16px}
-.sumr b{font:400 16px/1 var(--px);margin-left:6px}
+.sumr b{font:700 16px/1 var(--px);margin-left:6px}
 .ar{display:grid;grid-template-columns:72px 52px minmax(0,1.1fr) minmax(0,1.6fr) 92px;gap:10px;align-items:center;padding:8px 6px;margin-top:4px;background:var(--well)}
 .ar.h{background:none;color:var(--ink-2);font:600 13px/1.2 var(--ui);letter-spacing:.06em;text-transform:uppercase}
 .ar .st{font-size:14px}.ar .no{font-size:12px}
@@ -66,10 +66,10 @@ summary::marker{color:var(--p1)}
 .gp{justify-self:end;font:700 14px/1.2 var(--ui);letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;white-space:nowrap;background:#fff}
 .gp.ok{color:#fff;background:var(--hp)}.gp.warn{color:var(--ink);background:var(--gold)}.gp.bad{color:#fff;background:var(--bad)}.gp.free{color:var(--ink-2)}
 .axis{display:flex;justify-content:space-between;color:var(--ink-2);font-size:13px;margin-top:4px}
-body.public .adm,body.public #mode,body.public #undo{display:none!important}
+body.public .adm,body.public #mode,body.public #undo,body.public #redo{display:none!important}
 body.show .desk,body.show .ctl,body.show .adm{display:none}
 body.show .tr{min-height:72px}body.show .nm{font-size:26px}body.show .lp{font-size:28px}body.show .st{font-size:20px}
-h1.ttl{margin:0;font:400 20px/1.2 var(--px);outline:none}
+h1.ttl{margin:0;font:700 20px/1.2 var(--px);outline:none}
 h1.ttl[contenteditable=true]:hover{background:var(--well)}
 @media(max-width:760px){.auto .grid4,.grid4{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.grid4 .wide{grid-column:1/-1}.ar{grid-template-columns:60px 44px minmax(0,1fr) 84px}.ar .tl{grid-column:1/-1;grid-row:2}.ar.h .tlh{display:none}}
 @media(max-width:600px){.hd,.tr{grid-template-columns:60px 40px minmax(0,1fr) 64px;gap:8px;padding:0 8px}.ps,.hd .hp{display:none}.st{font-size:12px}.no{font-size:11px}.nm{font-size:17px}.lp{font-size:16px}.pod{grid-template-columns:minmax(0,1fr)}.ps:not(:empty){display:none}.hd,.tr{grid-template-columns:64px minmax(0,1fr) auto;gap:2px 10px}.tr{grid-template-areas:"st nm lp" "no nm lp";padding:6px 8px}.hd{grid-template-areas:"st nm lp"}.tr .st{grid-area:st;font-size:11px}.tr .no{grid-area:no;font-size:10px}.tr .nm{grid-area:nm}.tr .lp{grid-area:lp;font-size:16px}.hd span:nth-child(2){display:none}.tr .ctl{grid-column:1/-1}body.show .tr .st{font-size:11px}body.show .tr .no{font-size:10px}body.show .nm{font-size:19px}body.show .lp{font-size:18px}body.show .tr{min-height:60px}}
@@ -83,7 +83,8 @@ h1.ttl[contenteditable=true]:hover{background:var(--well)}
   <div class="status">
     <span class="live" role="status"><i></i><span id="sum">Live</span></span>
     <div class="admin-bar">
-      <button type="button" class="btn" id="undo" class="btn sm adm">Undo</button>
+      <button type="button" class="btn sm adm" id="undo" title="Nothing to undo" disabled>Undo</button>
+      <button type="button" class="btn sm adm" id="redo" title="Nothing to redo" disabled>Redo</button>
       <button type="button" class="btn" id="mode" class="btn sm">Display mode</button>
       <button type="button" class="btn" id="fs" class="btn sm">Fullscreen</button>
       <a class="btn sm adm" href="/speed" target="_blank" rel="noopener">Public view</a>
@@ -140,6 +141,7 @@ h1.ttl[contenteditable=true]:hover{background:var(--well)}
     <div id="aOut"></div>
   </section>
 </main>
+<div class="toast" id="toast" hidden></div>
 
 <script src="/assets/app.js"></script>
 <script>
@@ -151,7 +153,7 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const ADMIN=window.__ADMIN__===true;
 const blank=()=>({title:'Speed Comp',sample:false,live:null,rows:[],auto:{}});
-let S=blank(),hist=[],editId=null,prevPos={},rev=0,inflight=false,dirty=false,timer=null;
+let S=blank(),hist=[],fut=[],editId=null,prevPos={},rev=0,inflight=false,dirty=false,timer=null;
 const setLive=(ok,t)=>{const l=document.querySelector('.live');l.classList.toggle('off',!ok);if(t)l.title=t};
 async function flush(){if(inflight||!dirty)return;inflight=true;dirty=false;
   try{const r=await fetch('/api/state',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({rev,data:S})});
@@ -163,7 +165,14 @@ async function flush(){if(inflight||!dirty)return;inflight=true;dirty=false;
 const save=()=>{if(!ADMIN)return;dirty=true;clearTimeout(timer);timer=setTimeout(flush,200)};
 function adopt(st){rev=st.rev||0;S=Object.assign(blank(),st.data||{});S.auto=S.auto||{};fillAuto();
   if(document.activeElement&&document.activeElement.matches('.ctl input'))return;render()}
-const snap=()=>{hist.push(JSON.stringify(S));if(hist.length>50)hist.shift()};
+// Labelled history so Undo/Redo can say what they did; a new change clears Redo.
+const snap=(label)=>{hist.push({s:JSON.stringify(S),label:label||'last change'});if(hist.length>50)hist.shift();fut=[];syncHist()};
+function syncHist(){const u=hist[hist.length-1],r=fut[fut.length-1];
+  $('undo').disabled=!u;$('undo').title=u?'Undo: '+u.label:'Nothing to undo';$('redo').disabled=!r;$('redo').title=r?'Redo: '+r.label:'Nothing to redo'}
+function toast(t){const el=$('toast');el.innerHTML=`<div class="win"><p class="msg ok" style="margin:0">${esc(t)}</p></div>`;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>{el.hidden=true},4000)}
+function history(dir){const from=dir==='undo'?hist:fut,to=dir==='undo'?fut:hist;const p=from.pop();
+  if(!p)return toast(dir==='undo'?'Nothing to undo.':'Nothing to redo.');
+  to.push({s:JSON.stringify(S),label:p.label});S=JSON.parse(p.s);save();render();syncHist();toast((dir==='undo'?'Undone: ':'Redone: ')+p.label)}
 const order=()=>S.rows.slice().sort((a,b)=>a.start.localeCompare(b.start)||String(a.no).localeCompare(String(b.no),undefined,{numeric:true}));
 const r1=v=>Math.round(v*10)/10,fL=v=>v==null?'':r1(v).toFixed(1);
 const ord=n=>n+(['th','st','nd','rd'][(n%100>10&&n%100<14)?0:n%10<4?n%10:0]||'th');
@@ -197,15 +206,15 @@ function render(){
   $('pod').innerHTML=pod.join('');
 }
 
-function setLaps(id,v){const r=S.rows.find(x=>x.id===id);if(!r)return;snap();r.laps=v;save();render()}
+function setLaps(id,v){const r=S.rows.find(x=>x.id===id);if(!r)return;snap(v==null?`cleared laps for ${r.name}`:`laps for ${r.name}: ${fL(r.laps)||'—'} → ${fL(v)}`);r.laps=v;save();render()}
 $('rows').addEventListener('click',e=>{const b=e.target.closest('button[data-a]');if(!b)return;const id=b.closest('.tr').dataset.id,r=S.rows.find(x=>x.id===id),a=b.dataset.a;if(!r)return;
   if(a==='inc')setLaps(id,r1((r.laps||0)+1));
   if(a==='dec')setLaps(id,Math.max(0,r1((r.laps||0)-1)));
   if(a==='clr')setLaps(id,null);
-  if(a==='live'){snap();S.live=S.live===id?null:id;save();render()}
+  if(a==='live'){snap(S.live===id?`${r.name} off track`:`${r.name} on track`);S.live=S.live===id?null:id;save();render()}
   if(a==='edit'){editId=id;$('iStart').value=r.start;$('iNo').value=r.no;$('iName').value=r.name;$('fh').textContent='Editing '+r.name;$('sub').textContent='Save changes';$('cancel').hidden=false;$('f').scrollIntoView({behavior:'smooth',block:'nearest'});$('iStart').focus()}
   if(a==='del'){if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Tap again';setTimeout(()=>{if(b.isConnected){b.dataset.sure='';b.textContent='Remove'}},3000);return}
-    snap();S.rows=S.rows.filter(x=>x.id!==id);if(S.live===id)S.live=null;save();render()}
+    snap(`removed ${r.name}`);S.rows=S.rows.filter(x=>x.id!==id);if(S.live===id)S.live=null;save();render()}
 });
 $('rows').addEventListener('change',e=>{const i=e.target.closest('input[data-a=set]');if(!i)return;const id=i.closest('.tr').dataset.id;
   const v=i.value.trim()===''?null:Math.max(0,r1(+i.value));if(v!==null&&isNaN(v))return render();setLaps(id,v)});
@@ -216,7 +225,7 @@ const endEdit=()=>{editId=null;$('fh').textContent='Add a team to the schedule';
 $('cancel').onclick=endEdit;
 $('f').addEventListener('submit',e=>{e.preventDefault();const start=$('iStart').value,no=$('iNo').value.trim(),name=$('iName').value.trim();
   if(!start||!no||!name){$('msg').textContent='Fill in start time, team number and name.';return}
-  snap();
+  snap(editId?`edited ${name}`:`added ${name} at ${start}`);
   if(editId){const r=S.rows.find(x=>x.id===editId);if(r)Object.assign(r,{start,no,name});$('msg').textContent='Saved '+name+'.';endEdit()}
   else{clearSample();S.rows.push({id:uid(),start,no,name,laps:null});$('msg').textContent=`Added ${name} at ${start}.`;
     const [h,m]=start.split(':').map(Number),d=new Date(2000,0,1,h,m+8);$('f').reset();$('iStart').value=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');$('iNo').focus()}
@@ -228,7 +237,7 @@ $('doImp').onclick=()=>{let n=0,bad=0;const add=[];
     let st=normT(c[0]||''),k=1;if(!st){st='';k=0}const no=c[k],nm=c[k+1],lr=c[k+2];if(!no||!nm){bad++;return}const lp=lr===''||lr==null?null:r1(+lr);
     add.push({id:uid(),start:st,no,name:nm,laps:lp==null||isNaN(lp)?null:Math.max(0,lp)});n++});
   if(!n){$('bmsg').textContent='Nothing imported — each line needs at least Team no., Team name.';return}
-  snap();clearSample();S.rows.push(...add);save();render();$('imp').value='';
+  snap(`imported ${n} team${n>1?'s':''}`);clearSample();S.rows.push(...add);save();render();$('imp').value='';
   $('bmsg').textContent=`Imported ${n} team${n>1?'s':''}`+(bad?`, skipped ${bad} line${bad>1?'s':''} that didn’t match.`:'.')};
 
 const q=v=>{v=v==null?'':String(v);if(/^[=+\-@]/.test(v)&&isNaN(v))v="'"+v;return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
@@ -236,8 +245,10 @@ const csv=()=>{const p=positions();return [['Start time','Team no.','Team name',
 $('dl').hidden=false;$('dl').onclick=()=>{location.href='/api/export.csv'};
 $('copy').onclick=async()=>{const t=csv();try{await navigator.clipboard.writeText(t);$('bmsg').textContent='Copied — paste into any sheet.'}catch(e){$('imp').value=t;$('imp').select();$('bmsg').textContent='Copy was blocked — the CSV is selected in the box above. Press Ctrl+C.'}};
 $('resetAll').onclick=e=>{const b=e.currentTarget;if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Tap again to wipe everything';setTimeout(()=>{b.dataset.sure='';b.textContent='Reset all'},4000);return}
-  snap();S={title:S.title,sample:false,live:null,rows:[]};b.dataset.sure='';b.textContent='Reset all';save();render();$('bmsg').textContent='Cleared. Undo brings it back.'};
-$('undo').onclick=()=>{const p=hist.pop();if(!p)return;S=JSON.parse(p);save();render()};
+  snap('reset all');S={title:S.title,sample:false,live:null,rows:[]};b.dataset.sure='';b.textContent='Reset all';save();render();$('bmsg').textContent='Cleared. Undo brings it back.'};
+$('undo').onclick=()=>history('undo');
+$('redo').onclick=()=>history('redo');
+document.addEventListener('keydown',e=>{if(!ADMIN||!(e.metaKey||e.ctrlKey)||e.key.toLowerCase()!=='z'||e.target.matches('input,textarea,select,[contenteditable=true]'))return;e.preventDefault();history(e.shiftKey?'redo':'undo')});
 $('title').addEventListener('input',()=>{S.title=$('title').textContent.trim()||'Speed Comp'});
 $('title').addEventListener('blur',save);
 $('title').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('title').blur()}});
@@ -309,7 +320,7 @@ $('aBuild').onclick=()=>{
     +(bad.length?` Skipped line${bad.length>1?'s':''} ${bad.join(', ')} (need Team no. and a start time).`:'');
   $('aApply').hidden=false;
 };
-$('aApply').onclick=()=>{if(!plan)return;snap();clearSample();
+$('aApply').onclick=()=>{if(!plan)return;snap(`applied auto-schedule (${plan.length} teams)`);clearSample();
   plan.forEach(p=>{const r=S.rows.find(x=>key(x.no)===p.k);if(r)r.start=hhmm(p.at);else S.rows.push({id:uid(),start:hhmm(p.at),no:p.no,name:p.name,laps:null})});
   save();render();$('aApply').hidden=true;$('aMsg').textContent=`Applied — ${plan.length} teams now have their Speed Comp start times. Undo reverts it.`;
   document.querySelector('.sheet').scrollIntoView({behavior:'smooth'})};

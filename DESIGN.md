@@ -30,55 +30,55 @@ colors:
   fault-red: "#c42f3d"
 typography:
   display:
-    fontFamily: "Press Start 2P, ui-monospace, monospace"
+    fontFamily: "Chakra Petch, ui-monospace, monospace"
     fontSize: "40px"
     fontWeight: 400
     lineHeight: 1
     letterSpacing: "0em"
   headline:
-    fontFamily: "Press Start 2P, ui-monospace, monospace"
+    fontFamily: "Chakra Petch, ui-monospace, monospace"
     fontSize: "20px"
     fontWeight: 400
     lineHeight: 1.2
     letterSpacing: "0em"
   title:
-    fontFamily: "Press Start 2P, ui-monospace, monospace"
+    fontFamily: "Chakra Petch, ui-monospace, monospace"
     fontSize: "16px"
     fontWeight: 400
     lineHeight: 1.3
     letterSpacing: "0em"
   score:
-    fontFamily: "Press Start 2P, ui-monospace, monospace"
+    fontFamily: "Chakra Petch, ui-monospace, monospace"
     fontSize: "16px"
     fontWeight: 400
     lineHeight: 1
     letterSpacing: "0em"
   name:
-    fontFamily: "DotGothic16, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Atkinson Hyperlegible, ui-sans-serif, system-ui, sans-serif"
     fontSize: "34px"
     fontWeight: 400
     lineHeight: 1.1
     letterSpacing: "0em"
   body:
-    fontFamily: "DotGothic16, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Atkinson Hyperlegible, ui-sans-serif, system-ui, sans-serif"
     fontSize: "18px"
     fontWeight: 400
     lineHeight: 1.45
     letterSpacing: "0em"
   label:
-    fontFamily: "DotGothic16, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Atkinson Hyperlegible, ui-sans-serif, system-ui, sans-serif"
     fontSize: "14px"
     fontWeight: 400
     lineHeight: 1.2
     letterSpacing: "0.08em"
   button:
-    fontFamily: "DotGothic16, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Atkinson Hyperlegible, ui-sans-serif, system-ui, sans-serif"
     fontSize: "16px"
     fontWeight: 400
     lineHeight: 1
     letterSpacing: "0.06em"
   field:
-    fontFamily: "DotGothic16, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Atkinson Hyperlegible, ui-sans-serif, system-ui, sans-serif"
     fontSize: "22px"
     fontWeight: 400
     lineHeight: 1.1
@@ -186,7 +186,7 @@ Motion is console motion: everything moves in `steps()`, never eased. Cursors an
 - 9-slice pixel frames on every container and control; zero border-radius anywhere.
 - Two-sided colour logic: P1 red is the current player / top seed, P2 blue is the opponent / bottom seed.
 - Coin gold means "won", "1st", or "primary action"; HP green means "live / good"; navy is the frame and the ink.
-- Press Start 2P for numbers, titles and the VS chip; DotGothic16 for names, body and labels.
+- Chakra Petch for numbers, titles and the VS chip; Atkinson Hyperlegible for names, body and labels.
 - Stepped, frame-by-frame motion only.
 
 ## Colors
@@ -224,28 +224,28 @@ A cool periwinkle-and-navy console palette with three saturated game signals (re
 
 ## Typography
 
-**Display Font:** Press Start 2P (with ui-monospace, monospace)
-**Body Font:** DotGothic16 (with ui-sans-serif, system-ui, sans-serif)
+**Display Font:** Chakra Petch (with ui-monospace, monospace)
+**Body Font:** Atkinson Hyperlegible (with ui-sans-serif, system-ui, sans-serif)
 
-**Character:** Press Start 2P is the cartridge's numerals and headers: blocky but anti-aliased for readability, used sparingly at 11 to 40px. DotGothic16 is a legible dot-matrix face for everything a person must read fast: team names, members, labels, body. Both are self-hosted woff2 with latin and latin-ext subsets, and `font-synthesis:none` is set globally.
+**Character:** Chakra Petch is the cartridge's numerals and headers: blocky but anti-aliased for readability, used sparingly at 11 to 40px. Atkinson Hyperlegible is a legible dot-matrix face for everything a person must read fast: team names, members, labels, body. Both are self-hosted woff2 with latin and latin-ext subsets, and `font-synthesis:none` is set globally.
 
 ### Hierarchy
 - **Display** (400, 40px, 1): the on-stage team number in Now Playing (26px on mobile; 24px for the opponent side).
 - **Headline** (400, 20px, 1.2): the HUD logo, page titles, the big VS chip, the Champion headline.
 - **Title** (400, 16px, 1.3): window titles (14px under 720px, 14px in bracket columns). Map pin names and sub-headings drop to 12px.
 - **Score** (400, 16px, 1): every score, lap count and rank number; tabular. Stat values in Now Playing scale to 24px (20px mobile), speed laps to 22px.
-- **Name** (DotGothic16, 34px, 1.1): the on-stage team name; list names run 17 to 20px.
-- **Body** (DotGothic16, 18px, 1.45; 17px under 720px): running text and table cells.
-- **Label** (DotGothic16, 14px, 0.08em, uppercase): stat labels, table headers, field labels, window-title meta, match headers.
-- **Button** (DotGothic16, 16px, 0.06em, uppercase; 14px small).
-- **Field** (DotGothic16, 22px, 1.1, tabular): numbers typed by the moderator.
+- **Name** (Atkinson Hyperlegible, 34px, 1.1): the on-stage team name; list names run 17 to 20px.
+- **Body** (Atkinson Hyperlegible, 18px, 1.45; 17px under 720px): running text and table cells.
+- **Label** (Atkinson Hyperlegible, 14px, 0.08em, uppercase): stat labels, table headers, field labels, window-title meta, match headers.
+- **Button** (Atkinson Hyperlegible, 16px, 0.06em, uppercase; 14px small).
+- **Field** (Atkinson Hyperlegible, 22px, 1.1, tabular): numbers typed by the moderator.
 
-DotGothic16 ships one weight. Source declares 600 and 700 on names, buttons and labels, but with `font-synthesis:none` these render at 400; hierarchy is carried by size, case and tracking, not weight.
+Atkinson Hyperlegible ships one weight. Source declares 600 and 700 on names, buttons and labels, but with `font-synthesis:none` these render at 400; hierarchy is carried by size, case and tracking, not weight.
 
 ### Named Rules
-**The Pixel Numbers Rule.** Scores, ranks, team numbers, times and lap counts are set in Press Start 2P; names and words are DotGothic16. A number a student scans from the back of the room is always pixel type.
+**The Pixel Numbers Rule.** Scores, ranks, team numbers, times and lap counts are set in Chakra Petch; names and words are Atkinson Hyperlegible. A number a student scans from the back of the room is always pixel type.
 
-**The Smooth Text Rule.** All text renders anti-aliased (`-webkit-font-smoothing:antialiased`) with 0.02em tracking on DotGothic16; Press Start 2P keeps letter-spacing 0. Readability on phones and projectors beats hard pixel edges in type; the pixel character lives in the frames and icons.
+**The Smooth Text Rule.** No pixel or bitmap fonts: Chakra Petch for titles and numbers, Atkinson Hyperlegible (built for legibility) for everything people read. All text renders anti-aliased (`-webkit-font-smoothing:antialiased`) with 0.02em tracking on Atkinson Hyperlegible; Chakra Petch keeps letter-spacing 0. Readability on phones and projectors beats hard pixel edges in type; the pixel character lives in the frames and icons.
 
 ## Layout
 
@@ -275,25 +275,25 @@ Zero radius everywhere. Every corner is a notched pixel corner produced by a 9-s
 ### Buttons
 Chunky, tactile, uppercase cartridge buttons.
 - **Shape:** notched 9-slice frame, 6px border, no radius; min height 44px (36px small).
-- **Default:** white face with a periwinkle lip, navy text, 16px uppercase DotGothic16 at 0.06em.
+- **Default:** white face with a periwinkle lip, navy text, 16px uppercase Atkinson Hyperlegible at 0.06em.
 - **Go (primary):** coin-gold face with a darker gold lip; used for Save and confirm actions.
 - **Red:** P1-red face with a dark red lip and white text; for destructive or P1-side actions.
 - **Hover / Active / Focus:** hover brightens 4%; active and `aria-pressed=true` swap to a flat pressed fill and drop 2px; focus is a 3px coin-gold outline at 3px offset. Disabled is 45% opacity with no drop.
 - **Tabs:** stage tabs above the leaderboard are small buttons (38px) using `aria-pressed` for the selected tab.
 
 ### Chips (Tags)
-- **Style:** 3px plus-notched frame, 2px 6px padding, 13px uppercase DotGothic16 at 0.08em.
+- **Style:** 3px plus-notched frame, 2px 6px padding, 13px uppercase Atkinson Hyperlegible at 0.08em.
 - **Variants:** navy default; gold for Win, Bye and rank 1; silver and bronze for ranks 2 and 3; red for the M-side seed, Tie and No-show; blue for the B-side seed and On now; green for Wildcard; ghost (pale fill, dusk text) for Out, Waiting, Later and unscored seeds.
 
 ### Cards / Containers (Windows)
 - **Corner Style:** notched pixel frame, no radius. Default windows are a plain navy 6px outline with a white fill (no bevel), so the page stays quiet.
 - **Accent variants:** `p1` (8px, red inner band) marks the one live window (Now playing / On course); `gold` (8px, gold band) marks decisions. Nothing else gets a coloured band.
-- **Title bar:** Press Start 2P 16px title on the left, uppercase label meta on the right (real data: stage, counts). No rule under it; 14px of space separates title and body.
+- **Title bar:** Chakra Petch 16px title on the left, uppercase label meta on the right (real data: stage, counts). No rule under it; 14px of space separates title and body.
 - **Internal Padding:** 14px 16px (10px on mobile); accent windows 12px 14px.
 - **Rows inside windows:** separated by a 2px well-coloured line, not filled boxes. Fills are reserved for meaning (gold tint = 1st, P2 tint = current).
 
 ### Inputs / Fields
-- **Style:** 9-slice frame with an inset top-left periwinkle shadow line and white well, 6px border, 48px min height, 22px tabular DotGothic16, red caret. Labels above in the label style.
+- **Style:** 9-slice frame with an inset top-left periwinkle shadow line and white well, 6px border, 48px min height, 22px tabular Atkinson Hyperlegible, red caret. Labels above in the label style.
 - **Focus:** 3px coin-gold outline at 1px offset.
 - **Error:** `aria-invalid` swaps the outline to fault red.
 
@@ -314,10 +314,10 @@ Stage pins (56px notched frames with a pixel icon) linked by a dotted navy route
 ## Do's and Don'ts
 
 ### Do:
-- **Do** draw every new container, control and badge as a 9-slice pixel `border-image` with notched corners, reusing the 5x5 (window/control) or 3x3 (tag) geometry.
+- **Do** draw every new container, control and badge as a 9-slice pixel `border-image` with notched corners, reusing the 5x5 (window/control) or 3x3 (tag) geometry. The border-image draws the ring only (never `fill`); the face is a real `background` clipped to `padding-box`, because some browsers drop the `fill` centre and the frame colour bleeds behind text.
 - **Do** keep red for the current player / top seed and blue for the opponent across every screen. Never show the staff-only M/B groups.
 - **Do** reserve coin gold for wins, first place, decisions and the single primary action in a row.
-- **Do** set every score, rank, team number and time in Press Start 2P (anti-aliased, for readability).
+- **Do** set every score, rank, team number and time in Chakra Petch (anti-aliased, for readability).
 - **Do** animate with `steps()` timing only, and let `prefers-reduced-motion` switch it off.
 - **Do** use the pixel SVG icon set (cursor, lock, star, trophy, clock, skip, pencil) at 1em with crisp edges; draw new icons on the same 7 to 8 unit grid.
 - **Do** keep the page light: periwinkle dithered ground, white windows, navy ink.
@@ -327,5 +327,5 @@ Stage pins (56px notched frames with a pixel icon) linked by a dotted navy route
 - **Don't** use eased or springy transitions; nothing glides.
 - **Don't** use P1 red to signal an error; errors are fault red.
 - **Don't** add a dark theme; light mode is a brand commitment.
-- **Don't** set long text in Press Start 2P; it is for numbers, titles and short labels only.
+- **Don't** set long text in Chakra Petch; it is for numbers, titles and short labels only.
 - **Don't** use emoji or Unicode glyphs as icons; icons are pixel SVG paths.

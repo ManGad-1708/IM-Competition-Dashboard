@@ -23,12 +23,13 @@
 
   // HUD menu: highlight the current page and point links at the operator versions when logged in.
   function hud(active) {
+    // Students: three tabs. Moderators: their desk first, then the public pages.
     const items = ADMIN
-      ? [['desk', '/admin', 'Desk'], ['scores', '/', 'Scoreboard'], ['schedule', '/schedule', 'Bracket'], ['speed', '/admin/speed', 'Speed track']]
-      : [['scores', '/', 'Scores'], ['schedule', '/schedule', 'Bracket'], ['speed', '/speed', 'Speed track']];
+      ? [['desk', '/admin', 'Moderator desk'], ['|'], ['scores', '/', 'Live scores'], ['schedule', '/schedule', 'Bracket'], ['speed', '/admin/speed', 'Speed track']]
+      : [['scores', '/', 'Live scores'], ['schedule', '/schedule', 'Bracket'], ['speed', '/speed', 'Speed track']];
     const nav = document.querySelector('.menu');
-    if (nav) nav.innerHTML = items.map(([k, href, label]) =>
-      `<a href="${href}"${k === active ? ' aria-current="page"' : ''}>${icon('cursor')}${label}</a>`).join('');
+    if (nav) nav.innerHTML = items.map(([k, href, label]) => k === '|' ? '<span class="sep" aria-hidden="true"></span>' :
+      `<a href="${href}"${k === active ? ' aria-current="page"' : ''}>${label}</a>`).join('');
   }
 
   function setLive(ok, text) {
@@ -44,7 +45,7 @@
    * store.data is the working copy; call store.save() after changing it.
    */
   function createStore(opt) {
-    const st = { rev: 0, data: opt.blank(), sv: null, sheets: null, dirty: false, inflight: false, hist: [], timer: null, loaded: false };
+    const st = { rev: 0, data: opt.blank(), sv: null, sheets: null, dirty: false, inflight: false, hist: [], fut: [], timer: null, loaded: false };
     async function loadSheets() {
       const r = await fetch('/api/sheets', { cache: 'no-store' });
       st.sheets = await r.json();
@@ -70,8 +71,20 @@
       } catch (e) { st.dirty = true; setLive(false, 'Not saved — retrying'); setTimeout(flush, 2000); }
       finally { st.inflight = false; if (st.dirty) flush(); }
     }
-    st.snap = () => { st.hist.push(JSON.stringify(st.data)); if (st.hist.length > 60) st.hist.shift(); };
-    st.undo = () => { const p = st.hist.pop(); if (!p) return false; st.data = JSON.parse(p); st.save(); opt.onChange('local'); return true; };
+    // History of this browser's own changes. Each entry is the state before an action plus a label
+    // describing the action, so Undo/Redo can say what they did. A new action clears the redo stack.
+    st.snap = label => { st.hist.push({ s: JSON.stringify(st.data), label: label || 'last change' }); if (st.hist.length > 60) st.hist.shift(); st.fut = []; };
+    st.undo = () => {
+      const p = st.hist.pop(); if (!p) return null;
+      st.fut.push({ s: JSON.stringify(st.data), label: p.label });
+      st.data = JSON.parse(p.s); st.save(); opt.onChange('local'); return p.label;
+    };
+    st.redo = () => {
+      const n = st.fut.pop(); if (!n) return null;
+      st.hist.push({ s: JSON.stringify(st.data), label: n.label });
+      st.data = JSON.parse(n.s); st.save(); opt.onChange('local'); return n.label;
+    };
+    st.peek = () => ({ undo: st.hist.length ? st.hist[st.hist.length - 1].label : null, redo: st.fut.length ? st.fut[st.fut.length - 1].label : null });
     st.save = () => { if (!ADMIN) return; st.dirty = true; clearTimeout(st.timer); st.timer = setTimeout(flush, 150); };
     st.start = async () => {
       try { await loadSheets(); } catch (e) { setLive(false, 'Could not load sheets'); }
