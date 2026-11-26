@@ -1,0 +1,13 @@
+{
+  "name": "speed-comp",
+  "version": "1.1.0",
+  "description": "Live Speed Comp dashboard on Vercel: public display, password-protected operator page, live updates.",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "local": "node local.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

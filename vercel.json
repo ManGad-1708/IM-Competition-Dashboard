@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/index.js": { "includeFiles": "views/**", "maxDuration": 10 }
+  },
+  "rewrites": [
+    { "source": "/", "destination": "/api/index?r=page" },
+    { "source": "/admin", "destination": "/api/index?r=admin" },
+    { "source": "/login", "destination": "/api/index?r=login" },
+    { "source": "/logout", "destination": "/api/index?r=logout" },
+    { "source": "/healthz", "destination": "/api/index?r=health" },
+    { "source": "/api/state", "destination": "/api/index?r=state" },
+    { "source": "/api/export.csv", "destination": "/api/index?r=export" }
+  ]
+}

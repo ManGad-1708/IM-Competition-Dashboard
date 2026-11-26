@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Local data (old file-based storage, local test runs)
+data/
+
+# Vercel project link and pulled environment variables (contain secrets)
+.vercel/
+.env
+.env.*
+.env*.local
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.log
