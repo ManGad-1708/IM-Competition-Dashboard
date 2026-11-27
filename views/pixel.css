@@ -148,6 +148,10 @@ html{scrollbar-color:var(--ink) var(--dither)}
 .live.off{color:var(--bad)}
 .live.off i{background:var(--bad)}
 .live.off i{animation:none}
+.fs-btn .ic-compress{display:none}
+body.is-fs .fs-btn .ic-expand{display:none}
+body.is-fs .fs-btn .ic-compress{display:inline-block}
+@media (max-width:560px){.fs-btn .fs-label{display:none}.fs-btn{padding:0 10px}}
 .admin-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 
 main.page{max-width:1320px;margin:0 auto;padding:16px 16px 48px;display:grid;gap:16px}

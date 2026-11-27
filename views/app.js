@@ -11,6 +11,8 @@
     clock: ['0 0 7 7', 'M2 0h3v1H2zM1 1h1v1H1zM5 1h1v1H5zM0 2h1v3H0zM6 2h1v3H6zM1 5h1v1H1zM5 5h1v1H5zM2 6h3v1H2zM3 2h1v2H3zM4 3h1v1H4z'],
     skip: ['0 0 8 7', 'M0 0h1v7H0zM1 1h1v5H1zM2 2h1v3H2zM3 3h1v1H3zM4 0h1v7H4zM5 1h1v5H5zM6 2h1v3H6zM7 3h1v1H7z'],
     pencil: ['0 0 7 7', 'M5 0h1v1H5zM4 1h3v1H4zM3 2h3v1H3zM2 3h3v1H2zM1 4h3v1H1zM0 5h2v2H0zM2 5h1v1H2z'],
+    expand: ['0 0 8 8', 'M0 0h3v1H0zM0 1h1v2H0zM5 0h3v1H5zM7 1h1v2H7zM0 5h1v2H0zM0 7h3v1H0zM7 5h1v2H7zM5 7h3v1H5z'],
+    compress: ['0 0 8 8', 'M2 2h2v1H2zM2 2h1v2H2zM4 2h2v1H4zM5 2h1v2H5zM2 5h2v1H2zM2 4h1v2H2zM4 5h2v1H4zM5 4h1v2H5z'],
   };
   const icon = (n, cls = '') => {
     const [vb, d, hole] = ICONS[n];
@@ -30,6 +32,53 @@
     const nav = document.querySelector('.menu');
     if (nav) nav.innerHTML = items.map(([k, href, label]) => k === '|' ? '<span class="sep" aria-hidden="true"></span>' :
       `<a href="${href}"${k === active ? ' aria-current="page"' : ''}>${label}</a>`).join('');
+    mountFullscreen();
+  }
+
+  // Fullscreen toggle for showcasing a board on a big screen. Uses the native
+  // Fullscreen API (with the WebKit-prefixed fallback for older Safari).
+  const fsElement = () => document.fullscreenElement || document.webkitFullscreenElement || null;
+  const fsSupported = () => { const e = document.documentElement; return !!(e.requestFullscreen || e.webkitRequestFullscreen || e.webkitRequestFullScreen); };
+  function toggleFullscreen() {
+    try {
+      if (fsElement()) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); }
+      else { const e = document.documentElement; (e.requestFullscreen || e.webkitRequestFullscreen || e.webkitRequestFullScreen).call(e); }
+    } catch (err) { /* a blocked request just leaves the page as it is */ }
+  }
+  let fsKeyWired = false;
+  function mountFullscreen() {
+    const status = document.querySelector('.status');
+    if (!status || !fsSupported() || status.querySelector('.fs-btn')) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn sm fs-btn';
+    btn.innerHTML = icon('expand', 'ic-expand') + icon('compress', 'ic-compress') + '<span class="fs-label">Fullscreen</span>';
+    btn.addEventListener('click', toggleFullscreen);
+    status.appendChild(btn);
+    const sync = () => {
+      const on = !!fsElement();
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      btn.setAttribute('aria-label', on ? 'Exit fullscreen' : 'Enter fullscreen');
+      btn.title = on ? 'Exit fullscreen (F)' : 'Go fullscreen (F)';
+      btn.querySelector('.fs-label').textContent = on ? 'Exit' : 'Fullscreen';
+      document.body.classList.toggle('is-fs', on);
+    };
+    sync();
+    document.addEventListener('fullscreenchange', sync);
+    document.addEventListener('webkitfullscreenchange', sync);
+    // Press F to toggle on the public showcase screens — not while typing, and
+    // not on the moderator desk where F is a normal keystroke in the score fields.
+    if (!fsKeyWired && !ADMIN) {
+      fsKeyWired = true;
+      document.addEventListener('keydown', e => {
+        if (e.key !== 'f' && e.key !== 'F') return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        const t = e.target;
+        if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
+        e.preventDefault();
+        toggleFullscreen();
+      });
+    }
   }
 
   function setLive(ok, text) {
