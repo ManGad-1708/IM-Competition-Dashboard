@@ -74,24 +74,8 @@ main.page.viewer,.viewer-body .hud{max-width:1240px}
 .board .dist{color:var(--ink-2)}
 .board .team small{display:none}
 .board-foot{margin:10px 0 0;color:var(--ink-2);font-size:15px}
-
-/* ----- Results by match (both teams of each fixture together) ----- */
-.mb{list-style:none;margin:0;padding:0;display:grid;gap:10px}
-.mb li{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px 10px;align-items:stretch;padding:8px 10px;background:var(--well)}
-.mb .mhead{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline;gap:8px;font:700 13px/1 var(--px);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
-.mb .mhead .mt{font:700 14px var(--ui);color:var(--p2);text-transform:none;letter-spacing:0}
-.mb .mcell{display:grid;gap:4px;align-content:center;padding:8px 10px;background:#fff;outline:2px solid transparent;outline-offset:-2px}
-.mb .mcell .who{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.mb .mcell .px{font-size:13px;color:var(--ink-2)}
-.mb .mcell .t{font:700 18px/1.15 var(--ui);overflow-wrap:anywhere}
-.mb .mcell .meta{display:flex;align-items:center;gap:10px}
-.mb .mcell .s{font:700 17px/1 var(--px)}
-.mb .mcell.won{outline-color:var(--gold);background:var(--gold-tint)}
-.mb .mcell.won .s{color:var(--gold-ink)}
-.mb .mcell.lost{opacity:.6}
-.mb .mcell.bye{align-items:center;color:var(--ink-2)}
-.mb .vsm{align-self:center;font:700 12px/1 var(--px);padding:6px;background:var(--ink);color:#fff}
-@media (max-width:720px){.mb li{grid-template-columns:minmax(0,1fr)}.mb .vsm{justify-self:center}}
+.board .onfield{animation:ofblink 1.2s steps(2,jump-none) infinite}
+@keyframes ofblink{50%{opacity:.55}}
 
 @media (max-width:720px){
   .rc{grid-template-columns:44px minmax(0,1fr) auto;grid-template-areas:"no nm sc" "no det res";gap:2px 10px}
@@ -206,28 +190,38 @@ function renderNext() {
 function renderBoard() {
   const B = O.B, runs = O.store.data.runs || {};
   const open = B.stages.filter(s => s.status !== 'locked');
-  const hasResults = s => Object.values(runs[s.id] || {}).some(r => r.status === 'done' || r.status === 'forfeit');
+  const hasResults = s => Object.values(runs[s.id] || {}).some(r => r.status === 'done');
   let sel = boardStage && B.S[boardStage] && B.S[boardStage].status !== 'locked' ? B.S[boardStage] : (B.current ? B.S[B.current.stage] : B.active);
   if (!boardStage && !hasResults(sel)) { const prev = open.filter(hasResults).pop(); if (prev) sel = prev; }
   const rs = runs[sel.id] || {};
-  const matches = (sel.matches || []).filter(m => m.a || m.b);
-  // Each fixture is shown with both teams together; the winner is highlighted.
-  const cell = (m, t, won, lost) => {
-    if (!t) return `<div class="mcell bye"><span class="t">Bye</span></div>`;
-    return `<div class="mcell${won ? ' won' : ''}${lost ? ' lost' : ''}">
-      <div class="who">${O.arenaTag(m, t)}<span class="px">${O.tag(t)}</span><span class="t">${esc(O.tname(t))}</span></div>
-      <div class="meta"><span class="s">${O.scoreText(rs[t])}</span>${O.resultTag(sel, t)}</div></div>`;
-  };
-  const row = m => {
-    const tm = m.time ? `<span class="mt">${esc(m.time)}</span>` : '';
-    return `<li><div class="mhead"><span class="mno">Match ${esc(m.no)}</span>${tm}</div>
-      ${cell(m, m.a, m.winner === m.a && !!m.a, m.loser === m.a && !!m.a)}
-      <span class="vsm" aria-label="versus">VS</span>
-      ${cell(m, m.b, m.winner === m.b && !!m.b, m.loser === m.b && !!m.b)}</li>`;
-  };
+  // Both teams of the current fixture run together, so both are "on field" right now.
+  const onField = new Set();
+  if (B.current && B.current.stage === sel.id) {
+    const cm = sel.matches.find(x => x.a === B.current.team || x.b === B.current.team);
+    if (cm) [cm.a, cm.b].filter(Boolean).forEach(t => onField.add(t));
+  }
+  const status = t => onField.has(t) ? '<span class="tag blue onfield">On field</span>' : O.resultTag(sel, t);
+  const order = sel.matches.flatMap(m => [m.a, m.b]).filter(Boolean);
+  const rows = order.map(t => ({ t, r: rs[t] || {}, s: T.score(rs[t]), q: sel.queue ? sel.queue.indexOf(t) : -1 }));
+  const grp = x => (x.s != null && x.s !== Infinity ? 0 : x.s === Infinity ? 1 : 2);
+  rows.sort((a, b) => grp(a) - grp(b) || (grp(a) === 0 ? a.s - b.s || a.r.d2 - b.r.d2 : grp(a) === 2 ? a.q - b.q : 0) || +a.t - +b.t);
+  const seedOf = t => { const m = sel.matches.find(x => x.a === t || x.b === t); return m ? (m.a === t ? m.seedA : m.seedB) : null; };
+  const medal = ['gold', 'silver', 'bronze'];
+  let rank = 0, prev = null;
+  const body = rows.map((x, i) => {
+    const scored = grp(x) === 0;
+    if (scored) { if (x.s !== prev) rank = i + 1; prev = x.s; }
+    const rk = scored ? (rank <= 3 ? `<span class="tag ${medal[rank - 1]}">${rank}</span>` : `<span class="px">${rank}</span>`)
+      : seedOf(x.t) ? `<span class="dim">S${seedOf(x.t)}</span>` : '<span class="dim">--</span>';
+    const done = x.r.status === 'done';
+    return `<tr class="${scored && rank === 1 ? 'top' : ''}"><td class="rank">${rk}</td>
+      <td class="team"><span class="px">${O.tag(x.t)}</span>${esc(O.tname(x.t))}${done ? `<small>${O.formula(x.r)}</small>` : ''}</td>
+      <td class="d-only r dist">${done ? fmt(x.r.d1) : ''}</td><td class="d-only r dist">${done ? fmt(x.r.d2) : ''}</td>
+      <td class="r"><span class="scorec">${O.scoreText(rs[x.t])}</span></td><td class="r">${status(x.t)}</td></tr>`;
+  }).join('');
   const tabs = open.length > 1 ? `<div class="tabs" role="tablist" aria-label="Stage">${open.map(s => `<button type="button" role="tab" class="btn" data-tab="${s.id}" aria-selected="${s.id === sel.id}" aria-pressed="${s.id === sel.id}">${esc(s.short)}</button>`).join('')}</div>` : '';
-  $('board').innerHTML = `<h2 class="win-title">Leaderboard<span class="sub">${esc(sel.name)} · by match</span></h2>${tabs}
-    ${matches.length ? `<ul class="mb">${matches.map(row).join('')}</ul>` : '<p class="none">No matches in this stage yet.</p>'}
+  $('board').innerHTML = `<h2 class="win-title">Leaderboard<span class="sub">${esc(sel.name)}${hasResults(sel) ? '' : ' · seeding order'}</span></h2>${tabs}
+    ${rows.length ? `<table><thead><tr><th>Rank</th><th>Team</th><th class="d-only r">T1</th><th class="d-only r">T2</th><th class="r">Score</th><th class="r"><span class="sr">Status</span></th></tr></thead><tbody>${body}</tbody></table>` : '<p class="none">No teams in this stage yet.</p>'}
     <p class="board-foot">Score = T1 distance × T2 distance (cm). Lower score wins the match.</p>`;
 }
 
