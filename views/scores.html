@@ -152,11 +152,12 @@ function renderNow() {
   const oppRun = opp ? O.runOf(sid, opp) : null;
   const beat = oppRun && oppRun.status === 'done' ? `Score to beat<span class="px">${fmt(T.score(oppRun))}</span>` : oppRun && oppRun.status === 'forfeit' ? 'Did not start' : 'Not run yet';
   const p2 = opp
-    ? `<div class="fighter p2"><div class="who"><span class="dim">Opponent</span>${O.seedTag(st, m, opp)}</div><span class="no">${O.tag(opp)}</span><div class="nm">${esc(O.tname(opp))}</div><div class="beat">${beat}</div></div>`
+    ? `<div class="fighter p2"><div class="who"><span class="dim">Opponent</span>${O.seedTag(st, m, opp)}${O.arenaTag(m, opp)}</div><span class="no">${O.tag(opp)}</span><div class="nm">${esc(O.tname(opp))}</div><div class="beat">${beat}</div></div>`
     : `<div class="fighter p2"><div class="nm">Bye</div><div class="beat">No opponent this round</div></div>`;
-  el.innerHTML = `<h2 class="win-title">Now playing<span class="sub">${esc(st.name)} · Match ${esc(m ? m.no : '')} · ${st.done}/${st.total} run</span></h2>
+  const mtime = m && m.time ? ` · ${esc(m.time)}` : '';
+  el.innerHTML = `<h2 class="win-title">Now playing<span class="sub">${esc(st.name)} · Match ${esc(m ? m.no : '')}${mtime} · ${st.done}/${st.total} run</span></h2>
     <div class="faceoff">
-      <div class="fighter p1"><div class="who"><span class="oncourse">On course</span>${O.seedTag(st, m, team)}</div><span class="no">${O.tag(team)}</span>
+      <div class="fighter p1"><div class="who"><span class="oncourse">On course</span>${O.seedTag(st, m, team)}${O.arenaTag(m, team)}</div><span class="no">${O.tag(team)}</span>
         <div class="nm">${esc(O.tname(team))}</div>${O.members(team) ? `<div class="mem">${esc(O.members(team))}</div>` : ''}</div>
       <span class="vsbig" aria-label="versus">VS</span>${p2}
     </div>
@@ -167,7 +168,7 @@ function renderNext() {
   const B = O.B, st = B.current ? B.S[B.current.stage] : B.active, cur = B.current && B.current.team;
   const later = (st.skipped || []).filter(t => t !== cur);
   const pending = (st.queue || []).filter(t => t !== cur && !later.includes(t)).slice(0, 4);
-  const li = (t, i) => { const { m, opp } = T.teamResult(st, t); return `<li class="${i === 0 ? 'first' : ''}"><span class="px">${O.tag(t)}</span><b>${esc(O.tname(t))}</b><small>${i === 0 ? 'Get ready · ' : ''}Match ${esc(m ? m.no : '')}${opp ? ' vs ' + O.tag(opp) : ''}</small></li>`; };
+  const li = (t, i) => { const { m, opp } = T.teamResult(st, t); const ar = O.arenaTag(m, t); const tm = m && m.time ? ' · ' + esc(m.time) : ''; return `<li class="${i === 0 ? 'first' : ''}"><span class="px">${O.tag(t)}</span><b>${esc(O.tname(t))}${ar ? ' ' + ar : ''}</b><small>${i === 0 ? 'Get ready · ' : ''}Match ${esc(m ? m.no : '')}${opp ? ' vs ' + O.tag(opp) : ''}${tm}</small></li>`; };
   $('next').innerHTML = `<h2 class="win-title" id="nextH">Up next</h2>`
     + (pending.length ? `<ol class="q">${pending.map(li).join('')}</ol>` : '<p class="none">Nobody else waiting in this stage.</p>')
     + (later.length ? `<h3 class="qh">Running later</h3><ul class="q">${later.map(t => li(t, 1)).join('')}</ul>` : '');

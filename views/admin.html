@@ -161,11 +161,11 @@ function renderEntry() {
   const dk = sid + ':' + team, dr = draftFor(dk, run);
   const a = parseNum(dr.d1), b = parseNum(dr.d2);
   const beat = oppRun && oppRun.status === 'done' ? `To beat<span class="px">${fmt(T.score(oppRun))}</span>` : oppRun && oppRun.status === 'forfeit' ? 'Did not start' : 'Not run yet';
-  el.innerHTML = `<h2 class="win-title" id="entryH">${done ? 'Edit result' : 'Score this run'}<span class="sub">${esc(st.name)} · Match ${esc(m ? m.no : '')} · ${st.done}/${st.total} run</span></h2>
+  el.innerHTML = `<h2 class="win-title" id="entryH">${done ? 'Edit result' : 'Score this run'}<span class="sub">${esc(st.name)} · Match ${esc(m ? m.no : '')}${m && m.time ? ' · ' + esc(m.time) : ''} · ${st.done}/${st.total} run</span></h2>
     <div class="match">
-      <div class="side p1"><div class="who"><span class="oncourse">${done ? 'Editing' : 'On course'}</span>${O.seedTag(st, m, team)}</div><span class="no">${O.tag(team)}</span><div class="nm">${esc(O.tname(team))}</div></div>
+      <div class="side p1"><div class="who"><span class="oncourse">${done ? 'Editing' : 'On course'}</span>${O.seedTag(st, m, team)}${O.arenaTag(m, team)}</div><span class="no">${O.tag(team)}</span><div class="nm">${esc(O.tname(team))}</div></div>
       <span class="vs" aria-label="versus">VS</span>
-      ${opp ? `<div class="side p2"><div class="who"><span class="dim">Opponent</span></div><span class="no">${O.tag(opp)}</span><div class="nm">${esc(O.tname(opp))}</div><div class="beat">${beat}</div></div>` : '<div class="side p2"><div class="nm">Bye</div><div class="beat">No opponent</div></div>'}
+      ${opp ? `<div class="side p2"><div class="who"><span class="dim">Opponent</span>${O.arenaTag(m, opp)}</div><span class="no">${O.tag(opp)}</span><div class="nm">${esc(O.tname(opp))}</div><div class="beat">${beat}</div></div>` : '<div class="side p2"><div class="nm">Bye</div><div class="beat">No opponent</div></div>'}
     </div>
     <div class="fields">
       <div><label for="fStart">Start time<small>when the run began</small></label><div class="row"><input id="fStart" class="inp" type="time" value="${esc(dr.start)}" style="margin:0"><button type="button" class="btn" id="bNow" title="Fill in the current time">Now</button></div></div>
@@ -225,7 +225,7 @@ function renderQueue() {
   const cur = B.current && B.current.team;
   const pending = (st.queue || []).filter(t => t !== cur && !(st.skipped || []).includes(t));
   const skipped = (st.skipped || []).filter(t => t !== cur);
-  const li = t => { const { m, opp } = T.teamResult(st, t); return `<li><span class="px">${O.tag(t)}</span><span>${esc(O.tname(t))}<small>Match ${esc(m ? m.no : '')}${opp ? ' · vs ' + O.tag(opp) : ''}</small></span><button type="button" class="btn sm" data-call="${esc(t)}" data-stage="${st.id}" title="Put this team on course now">Run now</button></li>`; };
+  const li = t => { const { m, opp } = T.teamResult(st, t); const ar = O.arenaTag(m, t); const tm = m && m.time ? ' · ' + esc(m.time) : ''; return `<li><span class="px">${O.tag(t)}</span><span>${esc(O.tname(t))}${ar ? ' ' + ar : ''}<small>Match ${esc(m ? m.no : '')}${opp ? ' · vs ' + O.tag(opp) : ''}${tm}</small></span><button type="button" class="btn sm" data-call="${esc(t)}" data-stage="${st.id}" title="Put this team on course now">Run now</button></li>`; };
   $('queue').innerHTML = `<h2 class="win-title">Up next<span class="sub">${esc(st.name)} · ${pending.length} waiting</span></h2>
     ${pending.length ? `<ol class="q">${pending.slice(0, 6).map(li).join('')}</ol>${pending.length > 6 ? `<p class="msg">+ ${pending.length - 6} more in match order</p>` : ''}` : '<p class="msg">Nobody else waiting.</p>'}
     ${skipped.length ? `<h3 class="qh">Run later (skipped) · ${skipped.length}</h3><ul class="q">${skipped.map(li).join('')}</ul>` : ''}`;

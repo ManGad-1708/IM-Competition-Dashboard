@@ -46,6 +46,7 @@
 .side .sc{font-size:15px}
 .mc header{flex-wrap:wrap}
 .mc header>span:first-child{white-space:nowrap}
+.mc .mtime{flex-basis:100%;order:3;color:var(--p2);font-weight:700;letter-spacing:0;white-space:nowrap;text-transform:none}
 .col .win-title{font-size:17px;hyphens:none;overflow-wrap:normal;word-break:keep-all}
 .side .sc{font:700 13px/1 var(--px);text-align:right;min-width:4ch}
 .side.won{background:var(--gold-tint)}
@@ -124,8 +125,14 @@ const colStatus = c => { const ss = c.stages.map(id => B.S[id].status); return s
 function side(st, m, which) {
   const team = m[which];
   const first = which === 'a';
-  const label = st.id === 'Q' ? '' : (first ? m.seedA : m.seedB) ? 'S' + (first ? m.seedA : m.seedB) : ''; // M/B groups stay staff-only
-  const t = label ? `<span class="tag ${first ? 'red' : 'blue'}">${esc(label)}</span>` : '<span></span>';
+  const arena = first ? m.arenaA : m.arenaB; // Qualifying: show the Red/Blue arena each team plays on
+  let t;
+  if (st.id === 'Q' && arena) {
+    t = `<span class="tag ${arena}" title="${esc(arena[0].toUpperCase() + arena.slice(1))} arena">${esc(arena.toUpperCase())}</span>`;
+  } else {
+    const label = st.id === 'Q' ? '' : (first ? m.seedA : m.seedB) ? 'S' + (first ? m.seedA : m.seedB) : ''; // M/B groups stay staff-only
+    t = label ? `<span class="tag ${first ? 'red' : 'blue'}">${esc(label)}</span>` : '<span></span>';
+  }
   if (!team) return `<div class="side tbd">${t}<span class="px">--</span><b>TBD</b><span class="sc">--</span></div>`;
   const s = first ? m.sa : m.sb;
   const cls = m.winner ? (m.winner === team ? 'won' : 'lost') : '';
@@ -134,7 +141,8 @@ function side(st, m, which) {
 }
 function card(st, m, title) {
   const state = m.winner ? (m.picked ? '<span class="tag gold">Tie · decided</span>' : '<span class="tag green">Final</span>') : m.tie ? '<span class="tag gold">Tie</span>' : (m.sa != null || m.sb != null) ? '<span class="tag blue">Playing</span>' : '';
-  return `<article class="mc win flat" data-key="${esc(m.key || '')}"><header><span>${esc(title || 'Match ' + m.no)}</span>${state}</header>${side(st, m, 'a')}<span class="vsd">VS</span>${side(st, m, 'b')}</article>`;
+  const time = m.time ? `<span class="mtime">${esc(m.time)}</span>` : '';
+  return `<article class="mc win flat" data-key="${esc(m.key || '')}"><header><span>${esc(title || 'Match ' + m.no)}</span>${state}${time}</header>${side(st, m, 'a')}<span class="vsd">VS</span>${side(st, m, 'b')}</article>`;
 }
 function placeholders(id) {
   const lbl = (a, b, ta, tb) => `<article class="mc win flat"><header><span>${esc(ta)}</span></header>

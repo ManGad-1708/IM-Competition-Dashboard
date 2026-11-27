@@ -36,19 +36,23 @@
     const nav = document.querySelector('.menu');
     if (nav) nav.innerHTML = items.map(([k, href, label]) => k === '|' ? '<span class="sep" aria-hidden="true"></span>' :
       `<a href="${href}"${k === active ? ' aria-current="page"' : ''}>${label}</a>`).join('');
-    mountClockTimer();
+    mountClockTimer(active);
     mountFullscreen();
   }
 
-  // Header widgets shown on every page, public and moderator alike: a live wall
-  // clock and a 90-second run timer the operator can start, pause and reset. The
-  // timer is per-screen (not shared), counts down from 1:30 and flashes at zero.
+  // Header widgets shown on every page: a live wall clock and a shared 90-second run
+  // timer. The moderator (ADMIN pages) can start/pause/reset it and the state is saved
+  // on the server; public screens have no controls and just mirror the countdown.
   const TIMER_SECONDS = 90;
+  const TIMER_MS = TIMER_SECONDS * 1000;
   let clockTimerMounted = false;
-  function mountClockTimer() {
+  function mountClockTimer(active) {
     const status = document.querySelector('.status');
     if (!status || clockTimerMounted || status.querySelector('.clockbox')) return;
     clockTimerMounted = true;
+    // Only the moderator desks drive the timer; every viewer page (incl. a logged-in
+    // moderator just browsing the bracket) mirrors it with no controls.
+    const canControl = ADMIN && (active === 'desk' || active === 'speed-desk');
     const pad = n => String(n).padStart(2, '0');
 
     // --- live clock ---
@@ -61,34 +65,44 @@
     tickClock();
     setInterval(tickClock, 1000);
 
-    // --- 90s countdown timer ---
+    // --- shared 90s countdown timer ---
     const box = document.createElement('div');
-    box.className = 'timerbox';
+    box.className = 'timerbox' + (canControl ? '' : ' view');
     box.innerHTML = '<span class="timer" role="timer" aria-live="off">1:30</span>'
-      + '<button type="button" class="btn sm timer-go">Start</button>'
-      + '<button type="button" class="btn sm timer-reset">Reset</button>';
+      + (canControl ? '<button type="button" class="btn sm timer-go">Start</button><button type="button" class="btn sm timer-reset">Reset</button>' : '');
     const disp = box.querySelector('.timer');
     const goBtn = box.querySelector('.timer-go');
     const resetBtn = box.querySelector('.timer-reset');
-    let remaining = TIMER_SECONDS * 1000, endAt = 0, running = false, tick = null;
+    let state = { running: false, endAt: null, remaining: TIMER_MS, dur: TIMER_MS };
+    const norm = s => ({ running: !!s.running, endAt: s.endAt || null, remaining: typeof s.remaining === 'number' ? s.remaining : TIMER_MS, dur: s.dur || TIMER_MS });
+    const remainMs = () => (state.running && state.endAt ? state.endAt - Date.now() : state.remaining);
     const fmt = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + pad(s % 60); };
-    const paint = () => { disp.textContent = fmt(remaining); };
-    const halt = () => { running = false; clearInterval(tick); tick = null; goBtn.textContent = 'Start'; goBtn.setAttribute('aria-pressed', 'false'); };
-    const update = () => {
-      remaining = endAt - Date.now();
-      if (remaining <= 0) { remaining = 0; paint(); disp.classList.add('done'); halt(); return; }
-      paint();
+    const paint = () => {
+      const r = remainMs();
+      disp.textContent = fmt(r);
+      disp.classList.toggle('done', r <= 0 && (state.running || state.remaining <= 0));
+      if (goBtn) goBtn.textContent = state.running ? 'Pause' : 'Start';
     };
-    const toggle = () => {
-      if (running) { remaining = endAt - Date.now(); halt(); return; } // pause
-      if (remaining <= 0) { remaining = TIMER_SECONDS * 1000; disp.classList.remove('done'); }
-      endAt = Date.now() + remaining; running = true; goBtn.textContent = 'Pause'; goBtn.setAttribute('aria-pressed', 'true');
-      paint(); tick = setInterval(update, 200);
-    };
-    const reset = () => { halt(); remaining = TIMER_SECONDS * 1000; disp.classList.remove('done'); paint(); };
-    goBtn.addEventListener('click', toggle);
-    resetBtn.addEventListener('click', reset);
+    setInterval(paint, 200);
     paint();
+
+    if (canControl) {
+      const push = () => { fetch('/api/timer', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(state) }).catch(() => {}); };
+      goBtn.addEventListener('click', () => {
+        if (state.running) { state.remaining = Math.max(0, state.endAt - Date.now()); state.running = false; state.endAt = null; }
+        else { const r = state.remaining > 0 ? state.remaining : TIMER_MS; state.endAt = Date.now() + r; state.remaining = r; state.running = true; }
+        paint(); push();
+      });
+      resetBtn.addEventListener('click', () => { state = { running: false, endAt: null, remaining: TIMER_MS, dur: TIMER_MS }; paint(); push(); });
+      // Adopt whatever is already running when the desk loads.
+      fetch('/api/timer', { cache: 'no-store' }).then(r => r.json()).then(s => { if (s && s.dur) { state = norm(s); paint(); } }).catch(() => {});
+    } else {
+      // Public screens: no controls, just mirror the moderator's timer.
+      const pull = () => fetch('/api/timer', { cache: 'no-store' }).then(r => r.json()).then(s => { if (s && 'running' in s) { state = norm(s); paint(); } }).catch(() => {});
+      pull();
+      setInterval(pull, 1500);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) pull(); });
+    }
 
     // Place the clock and timer at the front of the status area, before "Live".
     const live = status.querySelector('.live');

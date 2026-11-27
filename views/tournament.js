@@ -93,7 +93,7 @@
 
     // 1. Qualifying — straight from the sheet.
     const q = S.Q;
-    finish(q, (sheets.qualifying || []).map(m => ({ no: m.no, a: m.a, b: m.b, sideA: (sheets.sides || [])[0], sideB: (sheets.sides || [])[1] })));
+    finish(q, (sheets.qualifying || []).map(m => ({ no: m.no, a: m.a, b: m.b, arenaA: m.arenaA, arenaB: m.arenaB, time: m.time, sideA: (sheets.sides || [])[0], sideB: (sheets.sides || [])[1] })));
     if (!q.matches.length) q.status = 'locked';
 
     // Qualifying winners, plus the best non-winner when needed for an even field.

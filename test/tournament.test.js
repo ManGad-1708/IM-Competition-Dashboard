@@ -15,12 +15,14 @@ function playStage(id) {
   return T.compute(sheets, data);
 }
 let b = T.compute(sheets, data);
+// Queue order follows the schedule: both teams of match 1, then match 2, and so on.
+const qOrder = sheets.qualifying.flatMap(m => [m.a, m.b]).filter(Boolean);
 assert.strictEqual(b.active.id, 'Q'); assert.strictEqual(b.S.Q.queue.length, 54);
-assert.strictEqual(b.current.team, '1'); assert.deepStrictEqual(b.next.map(x => x.team), ['23', '5']);
-// skip team 1 -> goes to the end
-data.runs.Q = { 1: { status: 'skip', skipT: 1 } };
+assert.strictEqual(b.current.team, qOrder[0]); assert.deepStrictEqual(b.next.map(x => x.team), [qOrder[1], qOrder[2]]);
+// skip the first team -> goes to the end
+data.runs.Q = { [qOrder[0]]: { status: 'skip', skipT: 1 } };
 b = T.compute(sheets, data);
-assert.strictEqual(b.current.team, '23'); assert.strictEqual(b.S.Q.queue.at(-1), '1');
+assert.strictEqual(b.current.team, qOrder[1]); assert.strictEqual(b.S.Q.queue.at(-1), qOrder[0]);
 b = playStage('Q');
 assert.strictEqual(b.S.Q.status, 'done');
 assert.strictEqual(b.S.Q.advance.length, 28); assert.ok(b.wildcard);

@@ -18,6 +18,11 @@
     return seed ? `<span class="tag ${first ? 'red' : 'blue'}">Seed ${seed}</span>` : '';
   };
 
+  /** Qualifying arena (Red/Blue) a team plays its match on, and the match's scheduled time. */
+  ctx.arenaOf = (m, team) => (!m ? '' : m.a === team ? (m.arenaA || '') : m.b === team ? (m.arenaB || '') : '');
+  ctx.arenaTag = (m, team) => { const a = ctx.arenaOf(m, team); return a ? `<span class="tag ${a}" title="${a[0].toUpperCase() + a.slice(1)} arena">${a.toUpperCase()}</span>` : ''; };
+  ctx.matchTime = m => (m && m.time) || '';
+
   /** One short status word per team in a stage. */
   ctx.result = (st, team) => {
     const r = ctx.runOf(st.id, team);

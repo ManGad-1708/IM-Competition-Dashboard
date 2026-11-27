@@ -164,8 +164,23 @@ const ROUTES = {
   '/login': 'login', '/logout': 'logout', '/healthz': 'health',
   '/api/state': 'state', '/api/export.csv': 'export',
   '/api/obstacle': 'obstacle', '/api/obstacle.csv': 'obstacle-export', '/api/sheets': 'sheets',
+  '/api/timer': 'timer',
 };
 const STATE_ROUTES = { state: 'speed', obstacle: 'obstacle' };
+
+// Shared run timer: the moderator starts/pauses/resets it; public screens only mirror it.
+// A single key holds the state; clients tick locally from endAt, so a 1 s edge cache is fine.
+const TIMER_KEY = 'timer:state';
+let memTimer = null;
+async function getTimer() {
+  if (!REDIS_URL) return memTimer;
+  const raw = await redis(['GET', TIMER_KEY]);
+  return raw ? JSON.parse(raw) : null;
+}
+async function setTimer(obj) {
+  if (!REDIS_URL) { memTimer = obj; return; }
+  await redis(['SET', TIMER_KEY, JSON.stringify(obj)]);
+}
 
 function validData(ns, d) {
   if (!d || typeof d !== 'object') return false;
@@ -221,6 +236,21 @@ module.exports = async (req, res) => {
 
     if (m === 'GET' && route === 'sheets') {
       return send(res, 200, JSON.stringify(loadSheets()), 'application/json', { 'Cache-Control': 'public, max-age=0, s-maxage=5, stale-while-revalidate=30' });
+    }
+
+    if (route === 'timer') {
+      if (m === 'GET') {
+        const t = await getTimer();
+        return send(res, 200, JSON.stringify(t || {}), 'application/json', { 'Cache-Control': 'public, max-age=0, s-maxage=1, stale-while-revalidate=1' });
+      }
+      if (m === 'PUT') {
+        if (!isAdmin(req)) return send(res, 401, '{"error":"login required"}', 'application/json');
+        if (!(req.headers['content-type'] || '').includes('application/json')) return send(res, 415, '{}', 'application/json');
+        const b = asJson(await readBody(req, 1e4)) || {};
+        const clean = { running: !!b.running, endAt: Number(b.endAt) || null, remaining: Number(b.remaining) || 0, dur: Number(b.dur) || 90000, v: Date.now() };
+        await setTimer(clean);
+        return send(res, 200, JSON.stringify(clean), 'application/json');
+      }
     }
 
     const ns = STATE_ROUTES[route];
