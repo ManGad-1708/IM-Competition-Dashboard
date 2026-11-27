@@ -23,15 +23,12 @@
   const hhmm = d => String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
   const ADMIN = window.__ADMIN__ === true;
 
-  // HUD menu: the three content tabs always open the public viewing pages, for
-  // everyone. Moderators also get their operator desks as separate links, so a
-  // tab never drops a viewer onto an editing screen.
+  // HUD menu: highlight the current page and point links at the operator versions when logged in.
+  // Moderators edit the speed board from the Speed track tab (the /admin/speed desk), the same way
+  // the Bracket tab carries edit controls for them; logged-out students always get the /speed viewer.
   function hud(active) {
-    // The speed page doubles as the operator desk at /admin/speed; when logged in
-    // there, highlight the "Speed desk" link rather than the "Speed track" tab.
-    if (ADMIN && active === 'speed') active = 'speed-desk';
     const items = ADMIN
-      ? [['desk', '/admin', 'Moderator desk'], ['speed-desk', '/admin/speed', 'Speed desk'], ['|'], ['scores', '/', 'Live scores'], ['schedule', '/schedule', 'Bracket'], ['speed', '/speed', 'Speed track']]
+      ? [['desk', '/admin', 'Moderator desk'], ['|'], ['scores', '/', 'Live scores'], ['schedule', '/schedule', 'Bracket'], ['speed', '/admin/speed', 'Speed track']]
       : [['scores', '/', 'Live scores'], ['schedule', '/schedule', 'Bracket'], ['speed', '/speed', 'Speed track']];
     const nav = document.querySelector('.menu');
     if (nav) nav.innerHTML = items.map(([k, href, label]) => k === '|' ? '<span class="sep" aria-hidden="true"></span>' :
