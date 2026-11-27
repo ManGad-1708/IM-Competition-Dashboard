@@ -39,6 +39,23 @@ input[type=time]::-webkit-calendar-picker-indicator{display:none}
 .empty{display:grid;justify-items:center;gap:8px;padding:12px 4px;text-align:center}
 .empty .px{font-size:20px;color:var(--hp-ink)}
 
+/* ----- Score this match (both teams run together) ----- */
+.startrow{margin-bottom:14px;max-width:360px}
+.startrow label{display:block;font:700 15px/1.25 var(--ui);color:var(--ink);margin-bottom:6px}
+.startrow label small{display:block;font-weight:400;font-size:14px;color:var(--ink-2)}
+.mteams{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:stretch;margin-bottom:14px}
+.tcard{background:var(--well);padding:10px 12px;display:grid;gap:10px;align-content:start;outline:2px solid var(--ink);outline-offset:-2px}
+.tcard.dns{opacity:.55}
+.tcard .who{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tcard .no{font:700 22px/1 var(--px);color:var(--ink)}
+.tcard .nm{font:700 18px/1.15 var(--ui);overflow-wrap:anywhere}
+.tcard .tf{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px;align-items:end}
+.tcard .tf label{display:block;font:700 14px/1.2 var(--ui);color:var(--ink);margin-bottom:4px}
+.tcard .tf label small{display:block;font-weight:400;font-size:13px;color:var(--ink-2)}
+.tcard .tf .inp{width:100%}
+.tcard .sv{font:700 20px/48px var(--px);color:var(--p1);white-space:nowrap;text-align:right}
+@media (max-width:720px){.mteams{grid-template-columns:minmax(0,1fr)}.mteams .vs{justify-self:center}}
+
 /* ----- Queue ----- */
 .q{list-style:none;margin:0;padding:0}
 .q li{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 2px;border-top:2px solid var(--well)}
@@ -46,6 +63,8 @@ input[type=time]::-webkit-calendar-picker-indicator{display:none}
 .q .px{font-size:13px}
 .q small{display:block;color:var(--ink-2);font-size:14px}
 .qh{margin:14px 0 4px;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.q .qn{display:inline-block}
+.q .qvs{display:inline-block;margin:0 6px;font:700 11px/1 var(--px);color:var(--ink-2);text-transform:uppercase}
 
 /* ----- Decisions ----- */
 .decide ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
@@ -137,97 +156,137 @@ function confirmTap(btn, label) {
 }
 const parseNum = v => { v = String(v).trim().replace(',', '.'); if (v === '') return null; const n = +v; return isFinite(n) && n >= 0 ? n : NaN; };
 const ok = n => n != null && !isNaN(n);
+const round2 = n => Math.round(n * 100) / 100; // distances & scores are kept to 2 decimal places
+const matchOf = (st, team) => st.matches.find(x => x.a === team || x.b === team);
 function draftFor(key, run) {
   if (!drafts[key]) drafts[key] = { start: (run && run.start) || '', d1: run && run.d1 != null ? String(run.d1) : '', d2: run && run.d2 != null ? String(run.d2) : '' };
   return drafts[key];
 }
 
+// Both teams of a fixture run together, so the desk scores a whole match at once:
+// one shared start time, a T1/T2 pair per team, and a single save.
 function renderEntry() {
   const B = O.B, el = $('entry');
-  const key = B.current ? B.current.stage + ':' + B.current.team : 'none';
+  const curMatch = B.current ? matchOf(B.S[B.current.stage], B.current.team) : null;
+  const key = curMatch ? B.current.stage + ':' + (curMatch.a || '-') + 'v' + (curMatch.b || '-') : 'none';
   if (el.contains(document.activeElement) && el.dataset.key === key && document.activeElement.matches('input')) return; // don't wipe typing
   el.dataset.key = key;
-  if (!B.current) {
+  if (!B.current || !curMatch) {
     const a = B.active, ties = (a.ties || []).length + (a.wildcardTie ? 1 : 0);
     el.innerHTML = `<h2 class="win-title" id="entryH">On course</h2><div class="empty"><div class="px">${B.podium ? 'Tournament done' : a.status === 'locked' ? 'No matches' : 'Stage clear'}</div>
       <div class="dim">${B.podium ? 'Champion: ' + O.tag(B.podium.first) + ' ' + esc(O.tname(B.podium.first)) : a.status === 'locked' ? 'Check sheets/QualifyingPlayoffs.xlsx.' : ties ? `Decide ${ties} tie${ties > 1 ? 's' : ''} on the right to unlock the next stage.` : 'Every team in this stage has run.'}</div></div>`;
     return;
   }
-  const { stage: sid, team, pinned } = B.current, st = B.S[sid];
-  const run = O.runOf(sid, team), { m, opp } = T.teamResult(st, team);
-  const oppRun = opp ? O.runOf(sid, opp) : null;
-  const done = run && (run.status === 'done' || run.status === 'forfeit');
+  const { stage: sid, pinned } = B.current, st = B.S[sid], m = curMatch;
+  const teams = [m.a, m.b].filter(Boolean);
+  const runOf = t => O.runOf(sid, t);
+  const acted = t => { const r = runOf(t); return !!r && (r.status === 'done' || r.status === 'forfeit'); };
+  const isDns = t => { const r = runOf(t); return !!r && r.status === 'forfeit'; };
+  const allDone = teams.every(acted);
   const later = T.STAGES.slice(T.STAGES.findIndex(s => s.id === sid) + 1).some(s => B.S[s.id].status !== 'locked');
-  const dk = sid + ':' + team, dr = draftFor(dk, run);
-  const a = parseNum(dr.d1), b = parseNum(dr.d2);
-  const beat = oppRun && oppRun.status === 'done' ? `To beat<span class="px">${fmt(T.score(oppRun))}</span>` : oppRun && oppRun.status === 'forfeit' ? 'Did not start' : 'Not run yet';
-  el.innerHTML = `<h2 class="win-title" id="entryH">${done ? 'Edit result' : 'Score this run'}<span class="sub">${esc(st.name)} · Match ${esc(m ? m.no : '')}${m && m.time ? ' · ' + esc(m.time) : ''} · ${st.done}/${st.total} run</span></h2>
-    <div class="match">
-      <div class="side p1"><div class="who"><span class="oncourse">${done ? 'Editing' : 'On course'}</span>${O.seedTag(st, m, team)}${O.arenaTag(m, team)}</div><span class="no">${O.tag(team)}</span><div class="nm">${esc(O.tname(team))}</div></div>
-      <span class="vs" aria-label="versus">VS</span>
-      ${opp ? `<div class="side p2"><div class="who"><span class="dim">Opponent</span>${O.arenaTag(m, opp)}</div><span class="no">${O.tag(opp)}</span><div class="nm">${esc(O.tname(opp))}</div><div class="beat">${beat}</div></div>` : '<div class="side p2"><div class="nm">Bye</div><div class="beat">No opponent</div></div>'}
-    </div>
-    <div class="fields">
-      <div><label for="fStart">Start time<small>when the run began</small></label><div class="row"><input id="fStart" class="inp" type="time" value="${esc(dr.start)}" style="margin:0"><button type="button" class="btn" id="bNow" title="Fill in the current time">Now</button></div></div>
-      <div><label for="fD1">T1 distance<small>object to T1, in cm</small></label><input id="fD1" class="inp" inputmode="decimal" autocomplete="off" placeholder="e.g. 4.5" value="${esc(dr.d1)}" style="margin:0"></div>
-      <div><label for="fD2">T2 distance<small>robot to T2, in cm</small></label><input id="fD2" class="inp" inputmode="decimal" autocomplete="off" placeholder="e.g. 12" value="${esc(dr.d2)}" style="margin:0"></div>
-      <div><span class="lbl">Score<small>T1 × T2, lower wins</small></span><span class="scoreval" id="fScore">${ok(a) && ok(b) ? fmt(a * b) : '--'}</span></div>
-    </div>
-    <div class="acts">
-      <button type="button" class="btn go" id="bSave">${done ? 'Save changes' : 'Save result'}</button>
-      ${done ? '<button type="button" class="btn" id="bClear" title="Delete this result; the team goes back into the queue">Delete result</button>' : '<button type="button" class="btn" id="bSkip" title="Team not ready: move them to the end of the queue">Not ready, run later</button>'}
-      <span class="spacer"></span>
-      ${pinned ? `<button type="button" class="btn" id="bUnpin">${done ? 'Cancel edit' : 'Back to normal order'}</button>` : ''}
-      ${done ? '' : '<button type="button" class="btn danger" id="bDns" title="Team did not turn up: they lose this match">No-show (loses match)</button>'}
-    </div>
-    <p class="msg" id="msg">${done && later ? 'Later rounds are already drawn: changing this can change their match-ups.' : ''}</p>`;
-  const upd = () => {
-    dr.start = $('fStart').value; dr.d1 = $('fD1').value; dr.d2 = $('fD2').value;
-    const x = parseNum(dr.d1), y = parseNum(dr.d2);
-    $('fD1').setAttribute('aria-invalid', String(Number.isNaN(x))); $('fD2').setAttribute('aria-invalid', String(Number.isNaN(y)));
-    $('fScore').textContent = ok(x) && ok(y) ? fmt(x * y) : '--';
+  const drafts2 = teams.map(t => [t, draftFor(sid + ':' + t, runOf(t))]);
+  const start = drafts2[0][1].start || (runOf(m.a) && runOf(m.a).start) || (m.b && runOf(m.b) && runOf(m.b).start) || '';
+  drafts2.forEach(([, dr]) => dr.start = start);
+  const slotOf = t => (t === m.a ? 'A' : 'B');
+  const card = (t, dr) => {
+    const x = parseNum(dr.d1), y = parseNum(dr.d2), s = slotOf(t), dns = isDns(t);
+    return `<div class="tcard${dns ? ' dns' : ''}" data-slot="${s}">
+      <div class="who">${O.seedTag(st, m, t)}${O.arenaTag(m, t)}<span class="no">${O.tag(t)}</span><span class="nm">${esc(O.tname(t))}</span></div>
+      <div class="tf">
+        <label for="f${s}1">T1<small>object → T1, cm</small><input id="f${s}1" class="inp" inputmode="decimal" autocomplete="off" placeholder="e.g. 4.50" value="${esc(dr.d1)}" ${dns ? 'disabled' : ''}></label>
+        <label for="f${s}2">T2<small>robot → T2, cm</small><input id="f${s}2" class="inp" inputmode="decimal" autocomplete="off" placeholder="e.g. 12.00" value="${esc(dr.d2)}" ${dns ? 'disabled' : ''}></label>
+        <span class="sv" id="f${s}s">${dns ? 'DNS' : ok(x) && ok(y) ? fmt(round2(x) * round2(y)) : '--'}</span>
+      </div>
+      <div class="row"><button type="button" class="btn sm ${dns ? '' : 'danger'}" id="f${s}dns" title="${dns ? 'Undo no-show' : 'This team did not turn up: they lose the match'}">${dns ? 'Undo no-show' : 'No-show'}</button></div>
+    </div>`;
   };
-  ['fStart', 'fD1', 'fD2'].forEach(id => $(id).addEventListener('input', upd));
-  $('fD1').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('fD2').focus(); } });
-  $('fD2').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('bSave').click(); } });
+  el.innerHTML = `<h2 class="win-title" id="entryH">${allDone ? 'Edit match' : 'Score this match'}<span class="sub">${esc(st.name)} · Match ${esc(m.no)}${m.time ? ' · ' + esc(m.time) : ''} · ${st.done}/${st.total} run</span></h2>
+    <div class="startrow"><label for="fStart">Start time<small>when the run began — both teams run together</small></label><div class="row"><input id="fStart" class="inp" type="time" value="${esc(start)}" style="margin:0"><button type="button" class="btn" id="bNow" title="Fill in the current time">Now</button></div></div>
+    <div class="mteams">${card(m.a, drafts2[0][1])}${m.b ? '<span class="vs" aria-label="versus">VS</span>' + card(m.b, drafts2[1][1]) : ''}</div>
+    <div class="acts">
+      <button type="button" class="btn go" id="bSave">${allDone ? 'Save changes' : 'Save match'}</button>
+      ${allDone ? '<button type="button" class="btn" id="bClear" title="Delete both results; the match goes back into the queue">Clear results</button>' : '<button type="button" class="btn" id="bSkip" title="Teams not ready: move this match to the end of the queue">Not ready, run later</button>'}
+      <span class="spacer"></span>
+      ${pinned ? `<button type="button" class="btn" id="bUnpin">${allDone ? 'Cancel edit' : 'Back to normal order'}</button>` : ''}
+    </div>
+    <p class="msg" id="msg">${allDone && later ? 'Later rounds are already drawn: changing this can change the match-ups.' : ''}</p>`;
+
+  const updSlot = (t, dr) => {
+    const s = slotOf(t); if (isDns(t)) return;
+    dr.d1 = $('f' + s + '1').value; dr.d2 = $('f' + s + '2').value;
+    const x = parseNum(dr.d1), y = parseNum(dr.d2);
+    $('f' + s + '1').setAttribute('aria-invalid', String(Number.isNaN(x)));
+    $('f' + s + '2').setAttribute('aria-invalid', String(Number.isNaN(y)));
+    $('f' + s + 's').textContent = ok(x) && ok(y) ? fmt(round2(x) * round2(y)) : '--';
+  };
+  drafts2.forEach(([t, dr]) => {
+    const s = slotOf(t); if (isDns(t)) return;
+    ['1', '2'].forEach(n => $('f' + s + n).addEventListener('input', () => updSlot(t, dr)));
+    $('f' + s + '1').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('f' + s + '2').focus(); } });
+    $('f' + s + '2').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const nextT = teams.find(o => o !== t && !isDns(o)); if (nextT && !parseNum(drafts2.find(([x]) => x === nextT)[1].d1)) $('f' + slotOf(nextT) + '1').focus(); else $('bSave').click(); } });
+  });
+  $('fStart').addEventListener('input', () => drafts2.forEach(([, dr]) => dr.start = $('fStart').value));
   $('bNow').onclick = () => {
-    dr.start = hhmm(new Date()); $('fStart').value = dr.start;
-    if (!done) mutate(d => putRun(d, sid, team, Object.assign({}, O.runOf(sid, team), { start: dr.start, status: 'running' })), `start time ${dr.start} for ${who(team)}`);
+    const now = hhmm(new Date()); drafts2.forEach(([, dr]) => dr.start = now); $('fStart').value = now;
+    if (!allDone) mutate(d => teams.forEach(t => { if (!acted(t)) putRun(d, sid, t, Object.assign({}, O.runOf(sid, t), { start: now, status: 'running' })); }), `start time ${now} for match ${m.no}`);
   };
   $('bSave').onclick = () => {
-    upd();
-    const x = parseNum(dr.d1), y = parseNum(dr.d2);
-    if (!ok(x) || !ok(y)) { $('msg').className = 'msg bad'; $('msg').textContent = 'Enter both distances as numbers (0 or more), e.g. 12.5.'; $(ok(x) ? 'fD2' : 'fD1').focus(); return; }
-    const start = dr.start || (run && run.start) || hhmm(new Date());
-    mutate(d => { putRun(d, sid, team, { start, d1: x, d2: y, status: 'done', t: done && run.t ? run.t : Date.now() }); clearCurrent(d, team); }, `${done ? 'edited result' : 'result'} for ${who(team)} (${fmt(x)} × ${fmt(y)} = ${fmt(x * y)})`);
-    delete drafts[dk];
-    toast(`${O.tag(team)} ${O.tname(team)}: ${fmt(x)} × ${fmt(y)} = ${fmt(x * y)} saved.`, 'ok');
-    const f = $('fD1'); if (f) f.focus();
+    const toScore = drafts2.filter(([t]) => !isDns(t));
+    toScore.forEach(([t, dr]) => updSlot(t, dr));
+    for (const [t, dr] of toScore) {
+      const x = parseNum(dr.d1), y = parseNum(dr.d2);
+      if (!ok(x) || !ok(y)) { $('msg').className = 'msg bad'; $('msg').textContent = `Enter both distances for ${O.tag(t)} ${O.tname(t)} as numbers (0 or more), e.g. 12.50. (Or mark the team No-show.)`; $('f' + slotOf(t) + (ok(x) ? '2' : '1')).focus(); return; }
+    }
+    const start = drafts2[0][1].start || hhmm(new Date());
+    mutate(d => toScore.forEach(([t, dr]) => {
+      const x = round2(parseNum(dr.d1)), y = round2(parseNum(dr.d2)), prev = O.runOf(sid, t);
+      putRun(d, sid, t, { start, d1: x, d2: y, status: 'done', t: prev && prev.t ? prev.t : Date.now() });
+      clearCurrent(d, t);
+    }), `match ${m.no} result (${toScore.map(([t]) => O.tag(t)).join(' + ')})`);
+    teams.forEach(t => delete drafts[sid + ':' + t]);
+    toast(`Match ${m.no} saved: ${teams.map(t => isDns(t) ? O.tag(t) + ' DNS' : `${O.tag(t)} ${fmt(round2(parseNum(drafts2.find(([x]) => x === t)[1].d1)) * round2(parseNum(drafts2.find(([x]) => x === t)[1].d2)))}`).join(', ')}`, 'ok');
   };
+  drafts2.forEach(([t]) => {
+    const b = $('f' + slotOf(t) + 'dns'); if (!b) return;
+    b.onclick = e => {
+      if (isDns(t)) { delete drafts[sid + ':' + t]; mutate(d => putRun(d, sid, t, null), `undo no-show for ${who(t)}`); return; }
+      if (!confirmTap(e.currentTarget, 'Tap again: no-show')) return;
+      const start = drafts2[0][1].start || '';
+      mutate(d => { putRun(d, sid, t, { start, status: 'forfeit', t: Date.now() }); clearCurrent(d, t); }, `no-show for ${who(t)}`);
+      delete drafts[sid + ':' + t];
+    };
+  });
   if ($('bSkip')) $('bSkip').onclick = () => {
-    mutate(d => { putRun(d, sid, team, Object.assign({}, O.runOf(sid, team), { status: 'skip', skipT: Date.now() })); clearCurrent(d, team); }, `${who(team)} moved to run later`);
-    toast(`${O.tag(team)} will run later. They're in the “Run later” list.`);
-  };
-  if ($('bDns')) $('bDns').onclick = e => {
-    if (!confirmTap(e.currentTarget, 'Tap again to confirm no-show')) return;
-    mutate(d => { putRun(d, sid, team, { start: dr.start || '', status: 'forfeit', t: Date.now() }); clearCurrent(d, team); }, `no-show for ${who(team)}`);
-    delete drafts[dk];
+    mutate(d => { teams.forEach(t => { if (!acted(t)) putRun(d, sid, t, Object.assign({}, O.runOf(sid, t), { status: 'skip', skipT: Date.now() })); }); if (d.current && (d.current.team === m.a || d.current.team === m.b)) d.current = null; }, `match ${m.no} moved to run later`);
+    toast(`Match ${m.no} will run later. It's in the “Run later” list.`);
   };
   if ($('bClear')) $('bClear').onclick = e => {
-    if (!confirmTap(e.currentTarget, 'Tap again to delete')) return;
-    delete drafts[dk]; mutate(d => putRun(d, sid, team, null), `deleted result of ${who(team)}`);
+    if (!confirmTap(e.currentTarget, 'Tap again to clear')) return;
+    teams.forEach(t => delete drafts[sid + ':' + t]);
+    mutate(d => teams.forEach(t => putRun(d, sid, t, null)), `cleared results of match ${m.no}`);
   };
-  if ($('bUnpin')) $('bUnpin').onclick = () => { delete drafts[dk]; mutate(d => { d.current = null; }, `back to normal order (left ${who(team)})`); };
+  if ($('bUnpin')) $('bUnpin').onclick = () => { teams.forEach(t => delete drafts[sid + ':' + t]); mutate(d => { d.current = null; }, `back to normal order (left match ${m.no})`); };
 }
 
 function renderQueue() {
   const B = O.B, st = B.current ? B.S[B.current.stage] : B.active;
-  const cur = B.current && B.current.team;
-  const pending = (st.queue || []).filter(t => t !== cur && !(st.skipped || []).includes(t));
-  const skipped = (st.skipped || []).filter(t => t !== cur);
-  const li = t => { const { m, opp } = T.teamResult(st, t); const ar = O.arenaTag(m, t); const tm = m && m.time ? ' · ' + esc(m.time) : ''; return `<li><span class="px">${O.tag(t)}</span><span>${esc(O.tname(t))}${ar ? ' ' + ar : ''}<small>Match ${esc(m ? m.no : '')}${opp ? ' · vs ' + O.tag(opp) : ''}${tm}</small></span><button type="button" class="btn sm" data-call="${esc(t)}" data-stage="${st.id}" title="Put this team on course now">Run now</button></li>`; };
-  $('queue').innerHTML = `<h2 class="win-title">Up next<span class="sub">${esc(st.name)} · ${pending.length} waiting</span></h2>
-    ${pending.length ? `<ol class="q">${pending.slice(0, 6).map(li).join('')}</ol>${pending.length > 6 ? `<p class="msg">+ ${pending.length - 6} more in match order</p>` : ''}` : '<p class="msg">Nobody else waiting.</p>'}
+  const curMatch = B.current ? matchOf(st, B.current.team) : null;
+  const rs = (D().runs || {})[st.id] || {};
+  const acted = t => rs[t] && (rs[t].status === 'done' || rs[t].status === 'forfeit');
+  const teamsOf = m => [m.a, m.b].filter(Boolean);
+  const mDone = m => teamsOf(m).every(acted);
+  const mSkip = m => teamsOf(m).some(t => rs[t] && rs[t].status === 'skip');
+  const matches = (st.matches || []).filter(m => m.a || m.b);
+  const upcoming = matches.filter(m => m !== curMatch && !mDone(m) && !mSkip(m));
+  const skipped = matches.filter(m => m !== curMatch && !mDone(m) && mSkip(m));
+  const callTeam = m => teamsOf(m).find(t => !acted(t)) || m.a;
+  const li = m => {
+    const tm = m.time ? ' · ' + esc(m.time) : '';
+    const names = teamsOf(m).map(t => `<span class="qn">${O.tag(t)} ${esc(O.tname(t))}${O.arenaTag(m, t) ? ' ' + O.arenaTag(m, t) : ''}</span>`).join('<span class="qvs">vs</span>');
+    return `<li><span class="px">M${esc(m.no)}</span><span>${names}<small>Match ${esc(m.no)}${tm}</small></span><button type="button" class="btn sm" data-call="${esc(callTeam(m))}" data-stage="${st.id}" title="Put this match on course now">Run now</button></li>`;
+  };
+  $('queue').innerHTML = `<h2 class="win-title">Up next<span class="sub">${esc(st.name)} · ${upcoming.length} match${upcoming.length === 1 ? '' : 'es'} waiting</span></h2>
+    ${upcoming.length ? `<ol class="q">${upcoming.slice(0, 6).map(li).join('')}</ol>${upcoming.length > 6 ? `<p class="msg">+ ${upcoming.length - 6} more in match order</p>` : ''}` : '<p class="msg">No more matches waiting.</p>'}
     ${skipped.length ? `<h3 class="qh">Run later (skipped) · ${skipped.length}</h3><ul class="q">${skipped.map(li).join('')}</ul>` : ''}`;
 }
 
@@ -280,7 +339,7 @@ function render() { renderEntry(); renderQueue(); renderDecide(); renderResults(
 
 document.addEventListener('click', e => {
   const c = e.target.closest('[data-call]');
-  if (c) { mutate(d => { d.current = { stage: c.dataset.stage, team: c.dataset.call }; }, `${who(c.dataset.call)} put on course`); window.scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(() => { const f = $('fD1'); if (f) f.focus(); }, 50); return; }
+  if (c) { mutate(d => { d.current = { stage: c.dataset.stage, team: c.dataset.call }; }, `${who(c.dataset.call)} put on course`); window.scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(() => { const f = $('fA1') || $('fStart'); if (f) f.focus(); }, 50); return; }
   const p = e.target.closest('[data-pick]');
   if (p) return mutate(d => { d.picks = d.picks || {}; d.picks[p.dataset.pick] = p.dataset.team; }, `tie decided: ${who(p.dataset.team)} goes through`);
   const tb = e.target.closest('[data-tab]');
