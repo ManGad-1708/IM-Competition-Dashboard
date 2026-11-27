@@ -37,14 +37,47 @@
 
   // Fullscreen toggle for showcasing a board on a big screen. Uses the native
   // Fullscreen API (with the WebKit-prefixed fallback for older Safari).
+  //
+  // A full page load always drops fullscreen and can't silently re-enter, so
+  // switching dashboards would normally kick you out. We remember a "present"
+  // flag across pages (sessionStorage) and re-enter on the next page: silently
+  // if the browser allows it, otherwise on the viewer's first click or keypress.
+  const FS_KEY = 'im-present';
   const fsElement = () => document.fullscreenElement || document.webkitFullscreenElement || null;
   const fsSupported = () => { const e = document.documentElement; return !!(e.requestFullscreen || e.webkitRequestFullscreen || e.webkitRequestFullScreen); };
+  const wantsFs = () => { try { return sessionStorage.getItem(FS_KEY) === '1'; } catch (e) { return false; } };
+  const setWantsFs = on => { try { on ? sessionStorage.setItem(FS_KEY, '1') : sessionStorage.removeItem(FS_KEY); } catch (e) {} };
+  const enterFs = () => { const e = document.documentElement; return (e.requestFullscreen || e.webkitRequestFullscreen || e.webkitRequestFullScreen).call(e); };
+  const exitFs = () => (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+  let navigating = false; // set while following a same-site link, so leaving fullscreen to navigate doesn't look like the viewer pressing Esc
+  let reentryArmed = false;
   function toggleFullscreen() {
     try {
-      if (fsElement()) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); }
-      else { const e = document.documentElement; (e.requestFullscreen || e.webkitRequestFullscreen || e.webkitRequestFullScreen).call(e); }
+      if (fsElement()) { setWantsFs(false); exitFs(); }
+      else { setWantsFs(true); enterFs(); }
     } catch (err) { /* a blocked request just leaves the page as it is */ }
   }
+  function armReentry() {
+    if (reentryArmed) return; reentryArmed = true;
+    const go = () => { try { if (!fsElement() && wantsFs()) enterFs(); } catch (e) {} finally { cleanup(); } };
+    const cleanup = () => { reentryArmed = false; document.removeEventListener('pointerdown', go, true); document.removeEventListener('keydown', go, true); };
+    document.addEventListener('pointerdown', go, true);
+    document.addEventListener('keydown', go, true);
+  }
+  function reenterIfWanted() {
+    if (!fsSupported() || !wantsFs() || fsElement()) return;
+    try {
+      const p = enterFs();
+      if (p && p.catch) p.catch(armReentry); // silent re-entry blocked (no gesture) → wait for the first interaction
+      else if (!fsElement()) armReentry();
+    } catch (e) { armReentry(); }
+  }
+  // Mark same-site link clicks as navigation so the fullscreen we drop on the way
+  // out isn't mistaken for the viewer leaving presentation mode.
+  document.addEventListener('click', e => {
+    const a = e.target.closest && e.target.closest('a[href]');
+    if (a && a.origin === location.origin && !a.target) navigating = true;
+  }, true);
   let fsKeyWired = false;
   function mountFullscreen() {
     const status = document.querySelector('.status');
@@ -55,7 +88,9 @@
     btn.innerHTML = icon('expand', 'ic-expand') + icon('compress', 'ic-compress') + '<span class="fs-label">Fullscreen</span>';
     btn.addEventListener('click', toggleFullscreen);
     status.appendChild(btn);
-    const sync = () => {
+    // paint() only reflects the current state in the button; it must not touch the
+    // presentation flag, or the initial call on load would wipe it before re-entry.
+    const paint = () => {
       const on = !!fsElement();
       btn.setAttribute('aria-pressed', on ? 'true' : 'false');
       btn.setAttribute('aria-label', on ? 'Exit fullscreen' : 'Enter fullscreen');
@@ -63,9 +98,15 @@
       btn.querySelector('.fs-label').textContent = on ? 'Exit' : 'Fullscreen';
       document.body.classList.toggle('is-fs', on);
     };
-    sync();
-    document.addEventListener('fullscreenchange', sync);
-    document.addEventListener('webkitfullscreenchange', sync);
+    const onFsChange = () => {
+      paint();
+      // Leaving fullscreen in place (viewer pressed Esc / the OS exited) ends
+      // presentation mode; leaving it to follow a tab link does not.
+      if (!fsElement() && !navigating) setWantsFs(false);
+    };
+    paint();
+    document.addEventListener('fullscreenchange', onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
     // Press F to toggle on the public showcase screens — not while typing, and
     // not on the moderator desk where F is a normal keystroke in the score fields.
     if (!fsKeyWired && !ADMIN) {
@@ -79,6 +120,7 @@
         toggleFullscreen();
       });
     }
+    reenterIfWanted();
   }
 
   function setLive(ok, text) {

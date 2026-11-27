@@ -86,7 +86,6 @@ h1.ttl[contenteditable=true]:hover{background:var(--well)}
       <button type="button" class="btn sm adm" id="undo" title="Nothing to undo" disabled>Undo</button>
       <button type="button" class="btn sm adm" id="redo" title="Nothing to redo" disabled>Redo</button>
       <button type="button" class="btn" id="mode" class="btn sm">Display mode</button>
-      <button type="button" class="btn" id="fs" class="btn sm">Fullscreen</button>
       <a class="btn sm adm" href="/speed" target="_blank" rel="noopener">Public view</a>
       <form method="post" action="/logout" class="adm" style="margin:0"><button class="btn sm" type="submit">Log out</button></form>
     </div>
@@ -254,7 +253,6 @@ $('title').addEventListener('blur',save);
 $('title').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('title').blur()}});
 const setMode=on=>{document.body.classList.toggle('show',on);$('mode').textContent=on?'Operator mode':'Display mode';render()};
 $('mode').onclick=()=>setMode(!document.body.classList.contains('show'));
-$('fs').onclick=async()=>{try{document.fullscreenElement?await document.exitFullscreen():await document.documentElement.requestFullscreen()}catch(e){$('msg').textContent='Fullscreen isn’t allowed here — press F11 instead.'}};
 document.addEventListener('keydown',e=>{if(e.target.matches('input,textarea,[contenteditable]'))return;if(e.key==='d'||e.key==='D')$('mode').click()});
 
 const key=v=>{v=String(v).trim().toLowerCase();return /^\d+$/.test(v)?String(parseInt(v,10)):v};
