@@ -148,6 +148,15 @@ html{scrollbar-color:var(--ink) var(--dither)}
 .live.off{color:var(--bad)}
 .live.off i{background:var(--bad)}
 .live.off i{animation:none}
+.clockbox{display:inline-flex;align-items:center;gap:6px;color:var(--ink)}
+.clockbox .clock-ic{height:16px;color:var(--ink-2)}
+.clock{font:700 17px/1 var(--px);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.timerbox{display:inline-flex;align-items:center;gap:6px}
+.timer{font:700 20px/1 var(--px);font-variant-numeric:tabular-nums;min-width:62px;text-align:center;padding:3px 8px;background:var(--well);color:var(--ink)}
+.timer.done{color:#fff;background:var(--bad);animation:tflash .6s steps(2) infinite}
+@keyframes tflash{50%{opacity:.4}}
+.timerbox .btn{min-height:32px;font-size:13px;padding:0 9px}
+@media (max-width:760px){.clock{font-size:15px}.timer{font-size:17px;min-width:54px}.timerbox .btn{font-size:12px;padding:0 7px}}
 .fs-btn .ic-compress{display:none}
 body.is-fs .fs-btn .ic-expand{display:none}
 body.is-fs .fs-btn .ic-compress{display:inline-block}

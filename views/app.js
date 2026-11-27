@@ -23,17 +23,77 @@
   const hhmm = d => String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
   const ADMIN = window.__ADMIN__ === true;
 
-  // HUD menu: highlight the current page and point links at the operator versions when logged in.
-  // Moderators edit the speed board from the Speed track tab (the /admin/speed desk), the same way
-  // the Bracket tab carries edit controls for them; logged-out students always get the /speed viewer.
+  // HUD menu: highlight the current page. Speed track has two separate links — a
+  // public "Speed track" viewer (/speed) that everyone sees, and a moderator-only
+  // "Speed desk" editor (/admin/speed) grouped with the Moderator desk when logged in.
   function hud(active) {
+    // The speed page is served at both /speed (viewer) and /admin/speed (desk); when
+    // logged in on the desk, highlight "Speed desk" rather than the public "Speed track".
+    if (ADMIN && active === 'speed') active = 'speed-desk';
     const items = ADMIN
-      ? [['desk', '/admin', 'Moderator desk'], ['|'], ['scores', '/', 'Live scores'], ['schedule', '/schedule', 'Bracket'], ['speed', '/admin/speed', 'Speed track']]
+      ? [['desk', '/admin', 'Moderator desk'], ['speed-desk', '/admin/speed', 'Speed desk'], ['|'], ['scores', '/', 'Live scores'], ['schedule', '/schedule', 'Bracket'], ['speed', '/speed', 'Speed track']]
       : [['scores', '/', 'Live scores'], ['schedule', '/schedule', 'Bracket'], ['speed', '/speed', 'Speed track']];
     const nav = document.querySelector('.menu');
     if (nav) nav.innerHTML = items.map(([k, href, label]) => k === '|' ? '<span class="sep" aria-hidden="true"></span>' :
       `<a href="${href}"${k === active ? ' aria-current="page"' : ''}>${label}</a>`).join('');
+    mountClockTimer();
     mountFullscreen();
+  }
+
+  // Header widgets shown on every page, public and moderator alike: a live wall
+  // clock and a 90-second run timer the operator can start, pause and reset. The
+  // timer is per-screen (not shared), counts down from 1:30 and flashes at zero.
+  const TIMER_SECONDS = 90;
+  let clockTimerMounted = false;
+  function mountClockTimer() {
+    const status = document.querySelector('.status');
+    if (!status || clockTimerMounted || status.querySelector('.clockbox')) return;
+    clockTimerMounted = true;
+    const pad = n => String(n).padStart(2, '0');
+
+    // --- live clock ---
+    const clockBox = document.createElement('div');
+    clockBox.className = 'clockbox';
+    clockBox.title = 'Current time';
+    clockBox.innerHTML = icon('clock', 'clock-ic') + '<span class="clock" aria-live="off">--:--:--</span>';
+    const clockEl = clockBox.querySelector('.clock');
+    const tickClock = () => { const d = new Date(); clockEl.textContent = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()); };
+    tickClock();
+    setInterval(tickClock, 1000);
+
+    // --- 90s countdown timer ---
+    const box = document.createElement('div');
+    box.className = 'timerbox';
+    box.innerHTML = '<span class="timer" role="timer" aria-live="off">1:30</span>'
+      + '<button type="button" class="btn sm timer-go">Start</button>'
+      + '<button type="button" class="btn sm timer-reset">Reset</button>';
+    const disp = box.querySelector('.timer');
+    const goBtn = box.querySelector('.timer-go');
+    const resetBtn = box.querySelector('.timer-reset');
+    let remaining = TIMER_SECONDS * 1000, endAt = 0, running = false, tick = null;
+    const fmt = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + pad(s % 60); };
+    const paint = () => { disp.textContent = fmt(remaining); };
+    const halt = () => { running = false; clearInterval(tick); tick = null; goBtn.textContent = 'Start'; goBtn.setAttribute('aria-pressed', 'false'); };
+    const update = () => {
+      remaining = endAt - Date.now();
+      if (remaining <= 0) { remaining = 0; paint(); disp.classList.add('done'); halt(); return; }
+      paint();
+    };
+    const toggle = () => {
+      if (running) { remaining = endAt - Date.now(); halt(); return; } // pause
+      if (remaining <= 0) { remaining = TIMER_SECONDS * 1000; disp.classList.remove('done'); }
+      endAt = Date.now() + remaining; running = true; goBtn.textContent = 'Pause'; goBtn.setAttribute('aria-pressed', 'true');
+      paint(); tick = setInterval(update, 200);
+    };
+    const reset = () => { halt(); remaining = TIMER_SECONDS * 1000; disp.classList.remove('done'); paint(); };
+    goBtn.addEventListener('click', toggle);
+    resetBtn.addEventListener('click', reset);
+    paint();
+
+    // Place the clock and timer at the front of the status area, before "Live".
+    const live = status.querySelector('.live');
+    status.insertBefore(box, live || null);
+    status.insertBefore(clockBox, box);
   }
 
   // Fullscreen toggle for showcasing a board on a big screen. Uses the native
