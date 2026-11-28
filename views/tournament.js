@@ -105,6 +105,20 @@
     const winners = st => st.matches.map(m => m.winner).filter(Boolean);
     const losers = st => st.matches.map(m => m.loser).filter(Boolean);
     const seedFrom = (teams, stageOf) => teams.map(t => entrantInfo(t, stageOf(t), runs)).sort(seedCompare);
+    // Round 3 … Finals sheets: rows with team numbers replace the seeded match-ups; rows with only a
+    // Match No add their start/end times (and arenas) to the seeded match with that number.
+    const rounds = sheets.rounds || {};
+    const pick = (r, k) => (r && r[k]) || '';
+    const withSheet = (id, pairs) => {
+      const rows = rounds[id] || [];
+      if (!rows.length) return pairs;
+      const times = r => ({ arenaA: pick(r, 'arenaA'), arenaB: pick(r, 'arenaB'), time: pick(r, 'time'), start: pick(r, 'start'), end: pick(r, 'end') });
+      if (rows.some(r => r.a || r.b)) {
+        S[id].fromSheet = true;
+        return rows.filter(r => r.a || r.b).map(r => ({ no: r.no, a: r.a || null, b: r.b || null, seedA: r.seedA, seedB: r.seedB, ...times(r) }));
+      }
+      return pairs.map((m, i) => { const r = rows.find(x => x.no === m.no) || rows[i]; return r ? Object.assign({}, m, times(r)) : m; });
+    };
 
     // 1. Qualifying — straight from the sheet.
     const q = S.Q;
@@ -158,7 +172,7 @@
     const seededStage = (st, teams, stageOf) => {
       const seeded = seedFrom(teams, stageOf);
       st.seeds = seeded;
-      finish(st, pairBySeed(st.id, seeded));
+      finish(st, withSheet(st.id, pairBySeed(st.id, seeded)));
     };
     const r2Rows = r2.filter(m => !m.redoOf);
     if (q.status === 'done' && r2Rows.length) {
@@ -187,13 +201,13 @@
       if (bye) pool.push(entrantInfo(bye, 'R14', runs));
       const seeded = pool.sort(seedCompare);
       S.SF.seeds = seeded;
-      finish(S.SF, pairBySeed('SF', seeded));
+      finish(S.SF, withSheet('SF', pairBySeed('SF', seeded)));
     }
     if (S.SF.status === 'done') {
       const sfSeed = ts => seedFrom(ts, () => 'SF');
       const l = sfSeed(losers(S.SF)), w = sfSeed(winners(S.SF));
-      finish(S.P3, [{ no: '1', a: l[0] && l[0].team, b: l[1] && l[1].team }]);
-      finish(S.F, [{ no: '1', a: w[0] && w[0].team, b: w[1] && w[1].team }]);
+      finish(S.P3, withSheet('P3', [{ no: '1', a: l[0] && l[0].team, b: l[1] && l[1].team }]));
+      finish(S.F, withSheet('F', [{ no: '1', a: w[0] && w[0].team, b: w[1] && w[1].team }]));
     }
 
     // Queues: team order inside a stage = match order, both teams of a match back to back.

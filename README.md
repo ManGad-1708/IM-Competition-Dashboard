@@ -13,12 +13,14 @@ Every open screen picks up changes within about 2 seconds. Scores live in Upstas
 
 ## The sheets drive the app
 
-`sheets/Teams.xlsx`, `sheets/QualifyingPlayoffs.xlsx` and `sheets/Round2.xlsx` are read directly by the app (no conversion step):
+`sheets/Teams.xlsx`, `sheets/QualifyingPlayoffs.xlsx`, `sheets/Round2.xlsx` and the later-round sheets are read directly by the app (no conversion step):
 
 - **Teams.xlsx** — a header row with `Group No`, `Group Members Names`, `Group Name`, and the M/B letter in the next column. Fill in a team's *Group Name* and it shows up everywhere; empty names show as "Team 07".
 - **QualifyingPlayoffs.xlsx** — a header row with `Match No` and two team-number columns (`M Group No`, `B Group No`). Each row is one qualifying match.
 - **Round2.xlsx** — the Best-of-28 match-ups, set by hand (when it has rows, the app uses them instead of seeding by score). Type the first match's **Start Time**; every row below starts after the one above (match length and gap are at the top). Typing a time over any Start Time moves that match and everything after it; delete it to go back to automatic. A team cell can be `W-Q1` (winner of the qualifying match 1 redo). A row whose Match No is `Redo Q1` is that redo, played where it sits in the list: it is scored as its own stage ("Qualifying Redo"), the original qualifying result is kept, and its winner fills the `W-Q1` slot.
   To rebuild it from the live qualifying scores (seeded the same way the app does): `python3 scripts/round2_from_live.py --force --redo 1` (add `--start "2:00 PM"` to set the first time). It replaces hand edits, so run it before editing.
+- **Round3.xlsx, QuarterFinals.xlsx, SemiFinals.xlsx, Finals.xlsx** — the same layout for the later rounds. Type the first match's **Start Time** (and override any row) exactly as in Round2.xlsx. Leave the Team No columns blank: the app still pairs teams by score and the sheet only sets the times (and arenas) of match 1, 2, … Fill in team numbers on every row only to fix the match-ups by hand (then score corrections in the round before no longer re-pair them). Finals.xlsx has a `3rd Place` row and a `Final` row.
+  To make a fresh one: `python3 scripts/round_sheet.py 3|qf|sf|final --start "3:00 PM"` (`--force` to replace an existing sheet, `--teams` to fill in the match-ups from the live scores).
 
 Columns are found by their header text, so reordering columns or adding rows is fine. After editing a sheet, **commit and push (or redeploy)** — the new deploy reads the new sheets and every open screen reloads them automatically. Locally (`node local.js`) changes are picked up on save, no restart. Problems (a team in a match but not in the team list, a team in two matches, …) are listed under **Sheet check** on the operator page.
 

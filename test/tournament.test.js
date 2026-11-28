@@ -3,7 +3,7 @@ const assert = require('assert');
 const T = require('../views/tournament.js');
 assert.strictEqual(T.score({ status: 'done', d1: 2.5, d2: 4 }), 10, 'score is T1 × T2');
 // Seeding by score is tested without Round2.xlsx; the sheet-driven round is tested at the end.
-const sheets = Object.assign({}, require('../lib/sheets').loadSheets(), { round2: [] });
+const sheets = Object.assign({}, require('../lib/sheets').loadSheets(), { round2: [], rounds: {} });
 let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 const data = { runs: {}, picks: {} };
 let t = 0;
@@ -76,3 +76,22 @@ console.log('ok');
   assert.strictEqual(x.current.team, '24');
 }
 console.log('ok round 2');
+
+// Round 3 … Finals sheets: a times-only row adds times to the seeded match; team numbers fix the match-up.
+{
+  const d = { runs: {}, picks: {} };
+  const play = (sh, id) => { const st = T.compute(sh, d).S[id]; d.runs[id] = {}; st.queue.forEach((tm, i) => { d.runs[id][tm] = { status: 'done', d1: 1 + i, d2: 1 + (i * 7) % 13, t: i }; }); };
+  const base = Object.assign({}, sheets, { rounds: { R14: [{ no: '1', label: '1', a: '', b: '', start: '3:00 PM', end: '3:03 PM', time: '3:00 PM – 3:03 PM' }, { no: '2', label: '2', a: '', b: '', start: '3:04 PM', end: '3:07 PM', time: '3:04 PM – 3:07 PM' }] } });
+  play(base, 'Q'); play(base, 'R28');
+  let x = T.compute(base, d);
+  const seeded = T.compute(sheets, d).S.R14.matches;
+  assert.strictEqual(x.S.R14.matches.length, 7);
+  assert.deepStrictEqual(x.S.R14.matches.map(m => [m.a, m.b]), seeded.map(m => [m.a, m.b]), 'times-only sheet keeps seeded match-ups');
+  assert.strictEqual(x.S.R14.matches[0].start, '3:00 PM'); assert.strictEqual(x.S.R14.matches[1].end, '3:07 PM');
+  assert.strictEqual(x.S.R14.matches[2].start, undefined);
+  const fixed = Object.assign({}, sheets, { rounds: { R14: seeded.map((m, i) => ({ no: String(i + 1), label: String(i + 1), a: i === 0 ? m.b : m.a, b: i === 0 ? m.a : m.b, start: '4:00 PM' })) } });
+  x = T.compute(fixed, d);
+  assert.ok(x.S.R14.fromSheet); assert.strictEqual(x.S.R14.matches[0].a, seeded[0].b, 'team numbers in the sheet fix the match-up');
+  assert.strictEqual(x.S.R14.matches[0].start, '4:00 PM');
+}
+console.log('ok later rounds');
