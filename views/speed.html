@@ -179,7 +179,10 @@ function positions(){const done=S.rows.filter(r=>r.laps!=null);const p={};
   done.forEach(r=>{p[r.id]=1+done.filter(o=>o.laps>r.laps).length});return p}
 
 function render(){
-  const pos=positions(),rows=order(),ed=!document.body.classList.contains('show');
+  const ed=!document.body.classList.contains('show'),pos=positions();
+  // Display/public view is a results table: most laps first (position order), teams yet to run last.
+  // The operator view stays in start-time order so rows don't jump while laps are being typed.
+  const rows=ed?order():order().sort((a,b)=>(a.laps==null)-(b.laps==null)||(b.laps??0)-(a.laps??0));
   const changed=Object.keys(pos).filter(id=>prevPos[id]!==pos[id]&&(pos[id]<=3||prevPos[id]<=3));
   if(document.activeElement!==$('title')&&$('title').textContent!==S.title)$('title').textContent=S.title;
   const ran=S.rows.filter(r=>r.laps!=null).length;
