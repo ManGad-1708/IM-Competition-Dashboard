@@ -10,7 +10,7 @@
 <style>
 /* Public scoreboard: read-only. One column, three windows: last results, now playing, leaderboard. */
 main.page.viewer,.viewer-body .hud{max-width:1240px}
-.stage-row{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:16px;align-items:start}
+.stage-row{display:grid;grid-template-columns:232px minmax(0,2fr) minmax(0,1fr);gap:16px;align-items:start}
 .q{list-style:none;margin:0;padding:0}
 .q li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;align-items:baseline;padding:10px 0;border-top:2px solid var(--well)}
 .q li:first-child{border-top:0;padding-top:0}
@@ -26,7 +26,50 @@ main.page.viewer,.viewer-body .hud{max-width:1240px}
 .q .first .when b{color:#fff}
 .qh{margin:16px 0 6px;font:700 15px var(--ui);color:var(--ink-2)}
 .q .qvs{display:inline-block;margin:0 6px;font:700 12px/1 var(--px);color:var(--ink-2);text-transform:uppercase}
-@media (max-width:900px){.stage-row{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:1180px){.stage-row{grid-template-columns:216px minmax(0,1fr)}.stage-row .next{grid-column:1 / -1}}
+@media (max-width:760px){.stage-row{grid-template-columns:minmax(0,1fr)}}
+
+/* ----- Match clock: wall time on a navy LCD, the current match's slot under it ----- */
+.clockwin{display:grid;gap:12px}
+.clockwin .win-title{margin:0}
+.lcd{display:grid;justify-items:center;gap:2px;padding:14px 8px 10px;background:var(--ink);color:#fff;font-variant-numeric:tabular-nums;
+  border:3px solid transparent;border-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3' height='3' shape-rendering='crispEdges'%3E%3Cpath fill='%231b2142' d='M1 0h1v3H1zM0 1h3v1H0z'/%3E%3C/svg%3E") 1 / 3px / 0 stretch;background-clip:padding-box}
+.lcd .hm{display:flex;align-items:baseline;gap:4px;font:700 50px/1 var(--px);letter-spacing:.01em}
+.lcd .hm .colon{animation:cblink 1s steps(1) infinite}
+.lcd .ss{font:700 20px/1 var(--px);color:#c9d0f0}
+.lcd .ap{font:600 14px/1 var(--px);letter-spacing:.12em;color:#c9d0f0}
+@keyframes cblink{50%{opacity:.25}}
+.slotlbl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:0;font:400 14px/1.2 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.slotlbl .px{font-size:15px;letter-spacing:0;color:var(--ink);text-transform:none}
+.slot-times{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
+.slot-times .t{display:grid;gap:2px;padding:6px 8px 5px;background:var(--well)}
+.slot-times .t small{font:400 12px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.slot-times .t b{font:700 20px/1 var(--px);white-space:nowrap}
+.slot-times .t.on{background:var(--p1);color:#fff}
+.slot-times .t.on small{color:#ffe4e6}
+.slot-times .t.late{background:var(--bad);color:#fff}
+.slot-times .t.late small{color:#ffe4e6}
+.slot-times .arrow{height:2px;background:var(--ink-2)}
+.hpbar{display:grid;grid-template-columns:repeat(12,1fr);gap:2px;padding:3px;background:var(--ink)}
+.hpbar i{height:12px;background:#3a416b}
+.hpbar i.f{background:var(--p1)}
+.hpbar.late i.f{background:var(--bad)}
+.slot-state{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:0;font:700 16px/1.2 var(--ui)}
+.slot-state .px{font-size:22px;font-variant-numeric:tabular-nums}
+.slot-state.late{color:var(--bad)}
+.slot-state.wait{color:var(--ink-2)}
+.slot-state.wait .px{color:var(--ink)}
+.clock-next{margin:0;padding-top:10px;border-top:2px solid var(--well);font-size:15px;color:var(--ink-2)}
+.clock-next .px{color:var(--ink);font-size:16px}
+@media (prefers-reduced-motion:reduce){.lcd .hm .colon{animation:none}}
+@media (max-width:760px){
+  .clockwin{grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px 14px}
+  .clockwin .win-title{grid-column:1 / -1}
+  .lcd{grid-row:span 4;padding:10px 12px 8px}
+  .clockwin .slot-state{font-size:14px}.clockwin .slot-state .px{font-size:18px}
+  .lcd .hm{font-size:36px}
+  .clock-next{grid-column:1 / -1}
+}
 
 /* ----- Last results ----- */
 .log ol{list-style:none;margin:0;padding:0}
@@ -111,6 +154,7 @@ main.page.viewer,.viewer-body .hud{max-width:1240px}
 <main class="page viewer">
   <section class="win log" id="recent" aria-labelledby="recentH"></section>
   <div class="stage-row">
+    <section class="win clockwin" id="clock" aria-labelledby="clockH"></section>
     <section class="win p1 now" id="now" aria-live="polite"></section>
     <section class="win next" id="next" aria-labelledby="nextH"></section>
   </div>
@@ -166,12 +210,52 @@ function renderNow() {
   const waiting = slot => `<div class="fighter"><div class="nm">${esc(O.slotName(slot))}</div><div class="mem">Plays once the redo is decided</div></div>`;
   const line = O.lineFor(st);
   el.innerHTML = `<h2 class="win-title">Now playing<span class="sub">${esc(st.name)} · ${esc(O.matchTitle(m))} · ${line.done}/${line.total} run</span></h2>
-    ${m.start || m.time ? `<div class="nowwhen">${UI.when(m, 'lg')}</div>` : ''}
     <div class="faceoff">
       ${!m.a && m.slotA ? waiting(m.slotA) : fighter(m.a)}
       <span class="vsbig" aria-label="versus">VS</span>
       ${!m.b && m.slotB ? waiting(m.slotB) : fighter(m.b)}
     </div>`;
+}
+
+// Match clock: live wall time, with the current match's scheduled slot highlighted.
+const toMin = v => {
+  const x = /^(\d{1,2}):(\d{2})\s*([ap])?/i.exec(String(v || '').trim());
+  if (!x) return null;
+  let h = +x[1] % 24; const ap = (x[3] || '').toLowerCase();
+  if (ap === 'p' && h < 12) h += 12; if (ap === 'a' && h === 12) h = 0;
+  return h * 60 + +x[2];
+};
+const mmss = sec => { sec = Math.max(0, Math.round(sec)); const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
+  return h ? h + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') : m + ':' + String(s).padStart(2, '0'); };
+const short = v => esc(String(v || '').replace(/\s*[AP]M$/i, ''));
+let clockMatch = null, clockNext = null;
+function renderClock() {
+  const el = $('clock'); if (!el) return;
+  const d = new Date(), h = d.getHours(), p2 = n => String(n).padStart(2, '0');
+  const lcd = `<div class="lcd" role="timer" aria-label="Current time ${h % 12 || 12}:${p2(d.getMinutes())} ${h < 12 ? 'AM' : 'PM'}">
+    <span class="hm" aria-hidden="true">${h % 12 || 12}<span class="colon">:</span>${p2(d.getMinutes())}</span>
+    <span class="ss" aria-hidden="true">:${p2(d.getSeconds())} <span class="ap">${h < 12 ? 'AM' : 'PM'}</span></span></div>`;
+  const nextLine = clockNext && (clockNext.start || clockNext.time)
+    ? `<p class="clock-next">Next <span class="px">${esc(O.matchShort(clockNext))}</span> at <span class="px">${esc(clockNext.start || clockNext.time)}</span></p>` : '';
+  const m = clockMatch, s0 = m && toMin(m.start || m.time), e0 = m && (toMin(m.end) ?? (s0 != null ? s0 + 3 : null));
+  if (!m || s0 == null) {
+    el.innerHTML = `<h2 class="win-title" id="clockH">Clock</h2>${lcd}${m ? '<p class="slot-state wait">No time slot set for this match</p>' : ''}${nextLine}`;
+    return;
+  }
+  const now = (d - new Date(d).setHours(0, 0, 0, 0)) / 1000, S = s0 * 60, E = e0 * 60;
+  const phase = now < S ? 'wait' : now <= E ? 'on' : 'late';
+  const filled = phase === 'wait' ? 0 : phase === 'late' ? 12 : Math.min(12, Math.floor((now - S) / Math.max(1, E - S) * 12));
+  const state = phase === 'wait' ? `<span>Starts in</span><span class="px">${mmss(S - now)}</span>`
+    : phase === 'on' ? `<span>Time left</span><span class="px">${mmss(E - now)}</span>` : '';
+  el.innerHTML = `<h2 class="win-title" id="clockH">Clock</h2>${lcd}
+    <p class="slotlbl">Slot <span class="px">${esc(O.matchShort(m))}</span></p>
+    <div class="slot-times">
+      <span class="t ${phase === 'on' ? 'on' : ''}"><small>Start</small><b>${short(m.start || m.time)}</b></span>
+      <span class="arrow" aria-hidden="true"></span>
+      <span class="t ${phase === 'late' ? 'late' : ''}"><small>End</small><b>${e0 != null && m.end ? short(m.end) : '--'}</b></span>
+    </div>
+    <div class="hpbar ${phase}" aria-hidden="true">${Array.from({ length: 12 }, (_, i) => `<i class="${i < filled ? 'f' : ''}"></i>`).join('')}</div>
+    ${state ? `<p class="slot-state ${phase}">${state}</p>` : ''}${nextLine}`;
 }
 
 function renderNext() {
@@ -186,6 +270,7 @@ function renderNext() {
   const mSkip = m => teamsOf(m).some(t => rOf(m, t) && rOf(m, t).status === 'skip');
   const all = (st.timeline || st.matches || []).filter(m => m.a || m.b);
   const upcoming = all.filter(m => m !== curMatch && !mDone(m) && !mSkip(m)).slice(0, 4);
+  clockMatch = curMatch; clockNext = upcoming[0] || null;
   const later = all.filter(m => m !== curMatch && !mDone(m) && mSkip(m));
   const li = (m, i) => {
     const names = O.sides(m, '<span class="qvs">vs</span>');
@@ -238,7 +323,8 @@ document.addEventListener('click', e => {
   const tb = e.target.closest('[data-tab]');
   if (tb) { boardStage = tb.dataset.tab; renderBoard(); }
 });
-O.start({ render: () => { renderRecent(); renderNow(); renderNext(); renderBoard(); } });
+O.start({ render: () => { renderRecent(); renderNow(); renderNext(); renderClock(); renderBoard(); } });
+setInterval(renderClock, 1000);
 })();
 </script>
 </body>
