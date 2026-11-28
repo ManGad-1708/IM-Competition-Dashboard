@@ -20,6 +20,12 @@
     return `<svg class="ico ${cls}" viewBox="${vb}" width="${w}" height="${h}" style="aspect-ratio:${w} / ${h}" aria-hidden="true" focusable="false"><path d="${d}"/>${hole ? `<path d="${hole}" fill="#fff"/>` : ''}</svg>`;
   };
   const fmt = v => (v == null || v === '' || !isFinite(v) ? '--' : String(Math.round(v * 100) / 100));
+  /** A match's scheduled start, big and easy to spot; the end time rides along small. */
+  const when = (m, cls = '') => {
+    if (!m || !(m.start || m.time)) return '';
+    const start = m.start || m.time, end = m.start ? m.end : '';
+    return `<span class="when ${cls}">${icon('clock')}<span class="sr">Starts at </span><b>${esc(start)}</b>${end ? `<small>to ${esc(end)}</small>` : ''}</span>`;
+  };
   const hhmm = d => String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
   const ADMIN = window.__ADMIN__ === true;
 
@@ -274,5 +280,5 @@
     return st;
   }
 
-  window.UI = { $, esc, icon, fmt, hhmm, ADMIN, hud, setLive, createStore };
+  window.UI = { $, esc, icon, fmt, hhmm, when, ADMIN, hud, setLive, createStore };
 })();

@@ -46,7 +46,8 @@
 .side .sc{font-size:15px}
 .mc header{flex-wrap:wrap}
 .mc header>span:first-child{white-space:nowrap}
-.mc .mtime{flex-basis:100%;order:3;color:var(--p2);font-weight:700;letter-spacing:0;white-space:nowrap;text-transform:none}
+.mc .mtime{flex-basis:100%;order:3;margin-top:4px;letter-spacing:0;white-space:nowrap;text-transform:none}
+.mc .when small{display:none}
 .col .win-title{font-size:17px;hyphens:none;overflow-wrap:normal;word-break:keep-all}
 .side .sc{font:700 13px/1 var(--px);text-align:right;min-width:4ch}
 .side.won{background:var(--gold-tint)}
@@ -133,6 +134,8 @@ function side(st, m, which) {
     const label = st.id === 'Q' ? '' : (first ? m.seedA : m.seedB) ? 'S' + (first ? m.seedA : m.seedB) : ''; // M/B groups stay staff-only
     t = label ? `<span class="tag ${first ? 'red' : 'blue'}">${esc(label)}</span>` : '<span></span>';
   }
+  const slot = first ? m.slotA : m.slotB;
+  if (!team && slot) return `<div class="side tbd">${t}<span class="px">--</span><b>Winner of Qual. match ${esc(slot.slice(1))} redo</b><span class="sc">--</span></div>`;
   if (!team) return `<div class="side tbd">${t}<span class="px">--</span><b>TBD</b><span class="sc">--</span></div>`;
   const s = first ? m.sa : m.sb;
   const cls = m.winner ? (m.winner === team ? 'won' : 'lost') : '';
@@ -141,8 +144,9 @@ function side(st, m, which) {
 }
 function card(st, m, title) {
   const state = m.winner ? (m.picked ? '<span class="tag gold">Tie · decided</span>' : '<span class="tag green">Final</span>') : m.tie ? '<span class="tag gold">Tie</span>' : (m.sa != null || m.sb != null) ? '<span class="tag blue">Playing</span>' : '';
-  const time = m.time ? `<span class="mtime">${esc(m.time)}</span>` : '';
-  return `<article class="mc win flat" data-key="${esc(m.key || '')}"><header><span>${esc(title || 'Match ' + m.no)}</span>${state}${time}</header>${side(st, m, 'a')}<span class="vsd">VS</span>${side(st, m, 'b')}</article>`;
+  const redo = m.redo ? '<span class="tag ghost" title="This match is being played again in Round 2">Redo</span>' : '';
+  const time = m.start || m.time ? `<span class="mtime">${UI.when(m, 'sm')}</span>` : '';
+  return `<article class="mc win flat${st.id === 'QR' ? ' redo' : ''}" data-key="${esc(m.key || '')}"><header><span>${esc(title || 'Match ' + m.no)}</span>${redo}${state}${time}</header>${side(st, m, 'a')}<span class="vsd">VS</span>${side(st, m, 'b')}</article>`;
 }
 function placeholders(id) {
   const lbl = (a, b, ta, tb) => `<article class="mc win flat"><header><span>${esc(ta)}</span></header>
@@ -164,10 +168,10 @@ function column(c) {
   } else if (c.id === 'F') {
     body = card(B.S.F, B.S.F.matches[0], 'Final') + `<h3 class="sub-h">3rd place</h3>` + card(B.S.P3, B.S.P3.matches[0], '3rd place');
   } else {
-    body = st.matches.map(m => card(st, m)).join('');
+    body = (st.timeline || st.matches).map(m => m.stage === 'QR' ? card(B.S.QR, m, 'Redo · Qual. match ' + m.no) : card(st, m)).join('');
     if (c.id === 'Q' && B.wildcard) body += `<div class="special">${icon('star')}<span>Wildcard: <b>${tag(B.wildcard)} ${esc(tname(B.wildcard))}</b> — best score among non-winners</span></div>`;
     if (c.id === 'R14' && st.bye) body += `<div class="special">${icon('star')}<span>Bye to Semis: <b>${tag(st.bye)} ${esc(tname(st.bye))}</b> — best Best-of-14 score</span></div>`;
-    if (c.id !== 'Q') note = 'Seeded by score from the round before: seed 1 plays the middle seed.';
+    if (c.id !== 'Q') note = c.id === 'R28' && st.fromSheet ? 'Match-ups set by the moderators.' + (B.S.QR.matches.length ? ' A qualifying redo is played in this round; its winner takes the open slot.' : '') : 'Seeded by score from the round before: seed 1 plays the middle seed.';
   }
   return `<section class="win col st-${status}${sel === c.id ? ' sel' : ''}" id="col-${c.id}" aria-labelledby="h-${c.id}">
     <h2 class="win-title" id="h-${c.id}"><span>${status === 'locked' ? icon('lock') + ' ' : ''}${esc(name)}</span><span class="sub">${count} match${count === 1 ? '' : 'es'}</span></h2>

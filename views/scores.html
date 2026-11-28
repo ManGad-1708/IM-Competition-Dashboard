@@ -16,8 +16,14 @@ main.page.viewer,.viewer-body .hud{max-width:1240px}
 .q li:first-child{border-top:0;padding-top:0}
 .q .px{font-size:20px}
 .q b{font:700 20px/1.2 var(--ui);overflow-wrap:anywhere}
-.q small{grid-column:2;color:var(--ink-2);font-size:15px}
+.q small{grid-column:2;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-top:2px;color:var(--ink-2);font-size:15px}
+.q small:empty{display:none}
+.q .upn{font-weight:700}
+.q .first .upn{color:var(--p1)}
+.slot{font-style:normal;color:var(--ink-2)}
+.nowwhen{margin:-4px 0 12px}
 .q .first .px,.q .first b{color:var(--p1)}
+.q .first .when b{color:#fff}
 .qh{margin:16px 0 6px;font:700 15px var(--ui);color:var(--ink-2)}
 .q .qvs{display:inline-block;margin:0 6px;font:700 12px/1 var(--px);color:var(--ink-2);text-transform:uppercase}
 @media (max-width:900px){.stage-row{grid-template-columns:minmax(0,1fr)}}
@@ -152,35 +158,38 @@ function renderNow() {
   }
   const { stage: sid, team } = B.current, st = B.S[sid];
   const { m } = T.teamResult(st, team);
-  const mtime = m && m.time ? ` · ${esc(m.time)}` : '';
   // Both teams of the fixture run together, so show them side by side as one matchup.
   const fighter = t => t
     ? `<div class="fighter p1"><div class="who"><span class="oncourse">On course</span>${O.seedTag(st, m, t)}${O.arenaTag(m, t)}</div><span class="no">${O.tag(t)}</span>
         <div class="nm">${esc(O.tname(t))}</div>${O.members(t) ? `<div class="mem">${esc(O.members(t))}</div>` : ''}</div>`
     : `<div class="fighter p1"><div class="nm">Bye</div><div class="mem">No opponent this round</div></div>`;
-  el.innerHTML = `<h2 class="win-title">Now playing<span class="sub">${esc(st.name)} · Match ${esc(m ? m.no : '')}${mtime} · ${st.done}/${st.total} run</span></h2>
+  const waiting = slot => `<div class="fighter"><div class="nm">${esc(O.slotName(slot))}</div><div class="mem">Plays once the redo is decided</div></div>`;
+  const line = O.lineFor(st);
+  el.innerHTML = `<h2 class="win-title">Now playing<span class="sub">${esc(st.name)} · ${esc(O.matchTitle(m))} · ${line.done}/${line.total} run</span></h2>
+    ${m.start || m.time ? `<div class="nowwhen">${UI.when(m, 'lg')}</div>` : ''}
     <div class="faceoff">
-      ${fighter(m.a)}
+      ${!m.a && m.slotA ? waiting(m.slotA) : fighter(m.a)}
       <span class="vsbig" aria-label="versus">VS</span>
-      ${fighter(m.b)}
+      ${!m.b && m.slotB ? waiting(m.slotB) : fighter(m.b)}
     </div>`;
 }
 
 function renderNext() {
-  const B = O.B, st = B.current ? B.S[B.current.stage] : B.active;
-  const curMatch = B.current ? st.matches.find(x => x.a === B.current.team || x.b === B.current.team) : null;
-  const rs = (O.store.data.runs || {})[st.id] || {};
-  const acted = t => rs[t] && (rs[t].status === 'done' || rs[t].status === 'forfeit');
+  const B = O.B, cst = B.current ? B.S[B.current.stage] : B.active, st = O.lineFor(cst);
+  const curMatch = B.current ? cst.matches.find(x => x.a === B.current.team || x.b === B.current.team) : null;
+  const runs = O.store.data.runs || {};
+  const rOf = (m, t) => (runs[m.stage] || {})[t];
+  const acted = (m, t) => { const r = rOf(m, t); return r && (r.status === 'done' || r.status === 'forfeit'); };
   const teamsOf = m => [m.a, m.b].filter(Boolean);
-  const mDone = m => teamsOf(m).every(acted);
-  const mSkip = m => teamsOf(m).some(t => rs[t] && rs[t].status === 'skip');
-  const all = (st.matches || []).filter(m => m.a || m.b);
+  const open = m => !!(m.slotA && !m.a) || !!(m.slotB && !m.b);
+  const mDone = m => !open(m) && teamsOf(m).every(t => acted(m, t));
+  const mSkip = m => teamsOf(m).some(t => rOf(m, t) && rOf(m, t).status === 'skip');
+  const all = (st.timeline || st.matches || []).filter(m => m.a || m.b);
   const upcoming = all.filter(m => m !== curMatch && !mDone(m) && !mSkip(m)).slice(0, 4);
   const later = all.filter(m => m !== curMatch && !mDone(m) && mSkip(m));
   const li = (m, i) => {
-    const tm = m.time ? ' · ' + esc(m.time) : '';
-    const names = teamsOf(m).map(t => `${O.tag(t)} ${esc(O.tname(t))}${O.arenaTag(m, t) ? ' ' + O.arenaTag(m, t) : ''}`).join('<span class="qvs">vs</span>');
-    return `<li class="${i === 0 ? 'first' : ''}"><span class="px">M${esc(m.no)}</span><b>${names}</b><small>${i === 0 ? 'Up next · ' : ''}Match ${esc(m.no)}${tm}</small></li>`;
+    const names = O.sides(m, '<span class="qvs">vs</span>');
+    return `<li class="${i === 0 ? 'first' : ''}"><span class="px">${esc(O.matchShort(m))}</span><b>${names}</b><small>${UI.when(m, 'sm')}${i === 0 ? '<span class="upn">Up next</span>' : ''}${m.stage === 'QR' ? '<span class="upn">Qualifying redo</span>' : ''}</small></li>`;
   };
   $('next').innerHTML = `<h2 class="win-title" id="nextH">Up next</h2>`
     + (upcoming.length ? `<ol class="q">${upcoming.map((m, i) => li(m, i)).join('')}</ol>` : '<p class="none">No more matches waiting in this stage.</p>')

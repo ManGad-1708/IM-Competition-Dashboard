@@ -6,12 +6,18 @@
 //   picks: { [matchKey]: winnerTeamNo }   // tie decisions by the moderator
 //   current: { stage, team } | null      // team called up by the moderator
 //   focus: stageId | null                 // stage the moderator is running (else the earliest live one)
+//
+// Round 2 (Best of 28) comes from sheets/Round2.xlsx when it has rows (sheets.round2); otherwise it
+// is seeded by qualifying score. A "Redo Q1" row there is a re-run of qualifying match 1: it is its own
+// stage (QR, runs kept apart from the original scores), shown in Round 2's order, and its winner fills
+// any "W-Q1" slot in Round 2.
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Tournament = factory();
 })(typeof self !== 'undefined' ? self : this, function () {
   const STAGES = [
     { id: 'Q', name: 'Qualifying', short: 'QUAL' },
+    { id: 'QR', name: 'Qualifying Redo', short: 'REDO' },
     { id: 'R28', name: 'Best of 28', short: 'TOP 28' },
     { id: 'R14', name: 'Best of 14', short: 'TOP 14' },
     { id: 'QF', name: 'Quarter-Finals', short: 'QF' },
@@ -46,6 +52,7 @@
     m.sa = score(ra); m.sb = score(rb);
     m.key = keyOf(stage, m.a, m.b);
     m.winner = m.loser = null; m.tie = false;
+    if ((!m.a && m.slotA) || (!m.b && m.slotB)) return m; // still waiting for a redo winner
     if (!m.b) { if (m.a) { m.winner = m.a; m.bye = true; } return m; }
     if (m.sa == null || m.sb == null) return m;
     if (m.sa < m.sb) { m.winner = m.a; m.loser = m.b; }
@@ -74,6 +81,14 @@
     return { team, score: score(r), d2: r && r.status === 'done' ? num(r.d2) : null, from: stageId };
   }
 
+  /** First match in a mixed timeline (Round 2 + redo) with a team still to run; skipped matches last. */
+  function pickFromTimeline(st, S) {
+    const pend = m => [m.a, m.b].filter(t => t && S[m.stage].queue.includes(t));
+    const skip = m => pend(m).some(t => S[m.stage].skipped.includes(t));
+    const m = st.timeline.find(x => pend(x).length && !skip(x)) || st.timeline.find(x => pend(x).length);
+    return m ? { stage: m.stage, team: pend(m)[0], pinned: false } : null;
+  }
+
   function compute(sheets, data) {
     data = data || {};
     const runs = data.runs || {}, picks = data.picks || {};
@@ -82,7 +97,7 @@
     const R = id => runs[id] || {};
 
     const finish = (st, matches) => {
-      st.matches = matches.map(m => decide(st.id, m, R(st.id), picks));
+      st.matches = matches.map(m => Object.assign(decide(st.id, m, R(st.id), picks), { stage: st.id }));
       st.entrants = st.matches.flatMap(m => [m.a, m.b]).filter(Boolean);
       st.status = st.matches.length && st.matches.every(m => m.winner) ? 'done' : 'live';
       st.ties = st.matches.filter(m => m.tie && !m.picked);
@@ -93,8 +108,27 @@
 
     // 1. Qualifying — straight from the sheet.
     const q = S.Q;
-    finish(q, (sheets.qualifying || []).map(m => ({ no: m.no, a: m.a, b: m.b, arenaA: m.arenaA, arenaB: m.arenaB, time: m.time, sideA: (sheets.sides || [])[0], sideB: (sheets.sides || [])[1] })));
+    finish(q, (sheets.qualifying || []).map(m => ({ no: m.no, a: m.a, b: m.b, arenaA: m.arenaA, arenaB: m.arenaB, time: m.time, start: m.start, end: m.end, sideA: (sheets.sides || [])[0], sideB: (sheets.sides || [])[1] })));
     if (!q.matches.length) q.status = 'locked';
+
+    // 1b. Redo of a qualifying match (from the Round 2 sheet). The original result stays as it was.
+    const r2 = sheets.round2 || [];
+    const redoRows = r2.filter(m => m.redoOf);
+    const qr = S.QR;
+    qr.host = 'R28';
+    if (redoRows.length && q.status === 'done') {
+      finish(qr, redoRows.map(m => ({ no: m.redoOf, redoOf: m.redoOf, a: m.a, b: m.b, arenaA: m.arenaA, arenaB: m.arenaB, time: m.time, start: m.start, end: m.end })));
+      qr.matches.forEach(m => { const om = q.matches.find(x => x.no === m.redoOf); if (om) om.redo = true; });
+    } else qr.hidden = true;
+    // "W-Q1": the redo's winner when there is a redo of match 1, else the original winner.
+    const slotTeam = slot => {
+      if (!slot) return null;
+      const no = slot.slice(1);
+      const rm = qr.matches.find(m => m.redoOf === no);
+      if (rm) return rm.winner || null;
+      const om = q.matches.find(m => m.no === no);
+      return om ? om.winner || null : null;
+    };
 
     // Qualifying winners, plus the best non-winner when needed for an even field.
     let wildcard = null;
@@ -126,7 +160,18 @@
       st.seeds = seeded;
       finish(st, pairBySeed(st.id, seeded));
     };
-    if (q.status === 'done') seededStage(S.R28, q.advance, () => 'Q');
+    const r2Rows = r2.filter(m => !m.redoOf);
+    if (q.status === 'done' && r2Rows.length) {
+      // Round 2 typed by hand in sheets/Round2.xlsx.
+      finish(S.R28, r2Rows.map(m => ({
+        no: m.no, a: m.a || slotTeam(m.slotA), b: m.b || slotTeam(m.slotB), slotA: m.slotA, slotB: m.slotB,
+        seedA: m.seedA, seedB: m.seedB, arenaA: m.arenaA, arenaB: m.arenaB, time: m.time, start: m.start, end: m.end,
+      })));
+      S.R28.fromSheet = true;
+      // Sheet order, with the redo match where the sheet puts it.
+      let ri = 0, qi = 0;
+      S.R28.timeline = r2.map(m => (m.redoOf ? qr.matches[qi++] : S.R28.matches[ri++])).filter(Boolean);
+    } else if (q.status === 'done') seededStage(S.R28, q.advance, () => 'Q');
     if (S.R28.status === 'done') seededStage(S.R14, winners(S.R28), () => 'R28');
 
     // 4. Quarter-finals: best Best-of-14 winner skips straight to the semis.
@@ -163,7 +208,9 @@
       st.total = order.length;
     });
 
-    const live = stages.filter(s => s.status === 'live');
+    stages.forEach(st => { if (!st.timeline) st.timeline = st.matches; });
+    const live = stages.filter(s => s.status === 'live' && !s.host);
+    const nextInTimeline = st => pickFromTimeline(st, S);
     let active = (data.focus && S[data.focus] && S[data.focus].status !== 'locked') ? S[data.focus] : (live[0] || null);
     if (!active) active = [...stages].reverse().find(s => s.status === 'done') || stages[0];
 
@@ -171,6 +218,7 @@
     let current = null;
     const c = data.current;
     if (c && S[c.stage] && S[c.stage].status !== 'locked' && S[c.stage].entrants.includes(c.team)) current = { stage: c.stage, team: c.team, pinned: true };
+    else if (active.timeline !== active.matches) current = nextInTimeline(active);
     else if (active.queue && active.queue.length) current = { stage: active.id, team: active.queue[0], pinned: false };
     const curStage = current ? S[current.stage] : active;
     const next = (curStage.queue || []).filter(t => !current || t !== current.team).slice(0, 2).map(team => ({ stage: curStage.id, team }));

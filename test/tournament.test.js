@@ -2,7 +2,8 @@
 const assert = require('assert');
 const T = require('../views/tournament.js');
 assert.strictEqual(T.score({ status: 'done', d1: 2.5, d2: 4 }), 10, 'score is T1 × T2');
-const sheets = require('../lib/sheets').loadSheets();
+// Seeding by score is tested without Round2.xlsx; the sheet-driven round is tested at the end.
+const sheets = Object.assign({}, require('../lib/sheets').loadSheets(), { round2: [] });
 let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 const data = { runs: {}, picks: {} };
 let t = 0;
@@ -47,3 +48,31 @@ data.runs.Q[q0.winner] = { status: 'forfeit', t: ++t };
 b = T.compute(sheets, data); assert.strictEqual(b.S.Q.matches.find(m => m.key === q0.key).winner, loser);
 assert.strictEqual(b.podium, null, 'editing qualifying re-flows later rounds');
 console.log('ok');
+
+// Round 2 from sheets/Round2.xlsx, with a redo of qualifying match 1 played in the middle of it.
+{
+  const s2 = Object.assign({}, sheets, { round2: [
+    { no: '1', a: '1', b: '18', seedA: 1, seedB: 15, time: '2:00 PM – 2:03 PM', start: '2:00 PM', end: '2:03 PM' },
+    { no: '1', redoOf: '1', a: '47', b: '2', start: '2:04 PM', end: '2:07 PM', time: '2:04 PM – 2:07 PM' },
+    { no: '2', a: '24', b: '', slotB: 'Q1', seedA: 5, seedB: 19 },
+  ] });
+  const d = { runs: { Q: {} }, picks: {} };
+  sheets.qualifying.forEach(m => { d.runs.Q[m.a] = { status: 'done', d1: 1, d2: 1, t: 1 }; d.runs.Q[m.b] = { status: 'done', d1: 2, d2: 2 + +m.no, t: 1 }; });
+  let x = T.compute(s2, d);
+  assert.strictEqual(x.S.R28.matches.length, 2);
+  assert.strictEqual(x.S.QR.status, 'live'); assert.ok(x.S.Q.matches[0].redo);
+  assert.strictEqual(x.S.R28.matches[1].b, null, 'slot waits for the redo');
+  assert.ok(!x.S.R28.matches[1].bye, 'a waiting slot is not a bye');
+  assert.strictEqual(x.active.id, 'R28', 'the redo never becomes the automatic stage');
+  assert.deepStrictEqual(x.S.R28.timeline.map(m => m.stage), ['R28', 'QR', 'R28']);
+  assert.strictEqual(x.current.team, '1');
+  d.runs.R28 = { 1: { status: 'done', d1: 1, d2: 1, t: 2 }, 18: { status: 'done', d1: 3, d2: 3, t: 2 } };
+  x = T.compute(s2, d);
+  assert.deepStrictEqual([x.current.stage, x.current.team], ['QR', '47'], 'redo comes up in sheet order');
+  d.runs.QR = { 47: { status: 'done', d1: 9, d2: 9, t: 3 }, 2: { status: 'done', d1: 1, d2: 2, t: 3 } };
+  x = T.compute(s2, d);
+  assert.strictEqual(x.S.R28.matches[1].b, '2', 'redo winner takes the slot');
+  assert.strictEqual(x.S.Q.matches[0].winner, '47', 'original qualifying result is untouched');
+  assert.strictEqual(x.current.team, '24');
+}
+console.log('ok round 2');

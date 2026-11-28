@@ -61,7 +61,10 @@ input[type=time]::-webkit-calendar-picker-indicator{display:none}
 .q li{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 2px;border-top:2px solid var(--well)}
 .q li:first-child{border-top:0}
 .q .px{font-size:13px}
-.q small{display:block;color:var(--ink-2);font-size:14px}
+.q small{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-top:3px;color:var(--ink-2);font-size:14px}
+.q small:empty{display:none}
+.slot{font-style:normal;color:var(--ink-2)}
+.sched{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-4px 0 14px}
 .qh{margin:14px 0 4px;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
 .q .qn{display:inline-block}
 .q .qvs{display:inline-block;margin:0 6px;font:700 11px/1 var(--px);color:var(--ink-2);text-transform:uppercase}
@@ -200,9 +203,13 @@ function renderEntry() {
       <div class="row"><button type="button" class="btn sm ${dns ? '' : 'danger'}" id="f${s}dns" title="${dns ? 'Undo no-show' : 'This team did not turn up: they lose the match'}">${dns ? 'Undo no-show' : 'No-show'}</button></div>
     </div>`;
   };
-  el.innerHTML = `<h2 class="win-title" id="entryH">${allDone ? 'Edit match' : 'Score this match'}<span class="sub">${esc(st.name)} · Match ${esc(m.no)}${m.time ? ' · ' + esc(m.time) : ''} · ${st.done}/${st.total} run</span></h2>
+  const line = O.lineFor(st);
+  const waitSlot = (m.slotA && !m.a) || (m.slotB && !m.b);
+  el.innerHTML = `<h2 class="win-title" id="entryH">${allDone ? 'Edit match' : 'Score this match'}<span class="sub">${esc(st.name)} · ${esc(O.matchTitle(m))} · ${line.done}/${line.total} run</span></h2>
+    ${m.start || m.time ? `<div class="sched">${UI.when(m, 'lg')}<span class="dim">scheduled start</span></div>` : ''}
+    ${waitSlot ? `<p class="msg">The other side is the ${esc(O.slotName(m.slotA || m.slotB))}. Score this team now; the match is decided once the redo winner has run too.</p>` : ''}
     <div class="startrow"><label for="fStart">Start time<small>when the run began — both teams run together</small></label><div class="row"><input id="fStart" class="inp" type="time" value="${esc(start)}" style="margin:0"><button type="button" class="btn" id="bNow" title="Fill in the current time">Now</button></div></div>
-    <div class="mteams">${card(m.a, drafts2[0][1])}${m.b ? '<span class="vs" aria-label="versus">VS</span>' + card(m.b, drafts2[1][1]) : ''}</div>
+    <div class="mteams">${[['a', 'A'], ['b', 'B']].map(([k, K]) => { const d = drafts2.find(([t]) => t === m[k]); return d ? card(d[0], d[1]) : m['slot' + K] ? `<div class="tcard dns"><div class="who"><span class="nm">${esc(O.slotName(m['slot' + K]))}</span></div><div class="dim">Runs after the redo</div></div>` : ''; }).filter(Boolean).join('<span class="vs" aria-label="versus">VS</span>')}</div>
     <div class="acts">
       <button type="button" class="btn go" id="bSave">${allDone ? 'Save changes' : 'Save match'}</button>
       ${allDone ? '<button type="button" class="btn" id="bClear" title="Delete both results; the match goes back into the queue">Clear results</button>' : '<button type="button" class="btn" id="bSkip" title="Teams not ready: move this match to the end of the queue">Not ready, run later</button>'}
@@ -269,21 +276,22 @@ function renderEntry() {
 }
 
 function renderQueue() {
-  const B = O.B, st = B.current ? B.S[B.current.stage] : B.active;
-  const curMatch = B.current ? matchOf(st, B.current.team) : null;
-  const rs = (D().runs || {})[st.id] || {};
-  const acted = t => rs[t] && (rs[t].status === 'done' || rs[t].status === 'forfeit');
+  const B = O.B, cst = B.current ? B.S[B.current.stage] : B.active, st = O.lineFor(cst);
+  const curMatch = B.current ? matchOf(cst, B.current.team) : null;
+  const runs = D().runs || {};
+  const rOf = (m, t) => (runs[m.stage] || {})[t];
+  const acted = (m, t) => { const r = rOf(m, t); return r && (r.status === 'done' || r.status === 'forfeit'); };
   const teamsOf = m => [m.a, m.b].filter(Boolean);
-  const mDone = m => teamsOf(m).every(acted);
-  const mSkip = m => teamsOf(m).some(t => rs[t] && rs[t].status === 'skip');
-  const matches = (st.matches || []).filter(m => m.a || m.b);
+  const open = m => !!(m.slotA && !m.a) || !!(m.slotB && !m.b);
+  const mDone = m => !open(m) && teamsOf(m).every(t => acted(m, t));
+  const mSkip = m => teamsOf(m).some(t => rOf(m, t) && rOf(m, t).status === 'skip');
+  const matches = (st.timeline || st.matches || []).filter(m => m.a || m.b);
   const upcoming = matches.filter(m => m !== curMatch && !mDone(m) && !mSkip(m));
   const skipped = matches.filter(m => m !== curMatch && !mDone(m) && mSkip(m));
-  const callTeam = m => teamsOf(m).find(t => !acted(t)) || m.a;
+  const callTeam = m => teamsOf(m).find(t => !acted(m, t)) || m.a || m.b;
   const li = m => {
-    const tm = m.time ? ' · ' + esc(m.time) : '';
-    const names = teamsOf(m).map(t => `<span class="qn">${O.tag(t)} ${esc(O.tname(t))}${O.arenaTag(m, t) ? ' ' + O.arenaTag(m, t) : ''}</span>`).join('<span class="qvs">vs</span>');
-    return `<li><span class="px">M${esc(m.no)}</span><span>${names}<small>Match ${esc(m.no)}${tm}</small></span><button type="button" class="btn sm" data-call="${esc(callTeam(m))}" data-stage="${st.id}" title="Put this match on course now">Run now</button></li>`;
+    const names = O.sides(m, '<span class="qvs">vs</span>');
+    return `<li><span class="px">${esc(O.matchShort(m))}</span><span>${names}<small>${UI.when(m, 'sm')}${m.stage === 'QR' ? '<b>Qualifying redo</b>' : ''}</small></span><button type="button" class="btn sm" data-call="${esc(callTeam(m))}" data-stage="${m.stage}" title="Put this match on course now">Run now</button></li>`;
   };
   $('queue').innerHTML = `<h2 class="win-title">Up next<span class="sub">${esc(st.name)} · ${upcoming.length} match${upcoming.length === 1 ? '' : 'es'} waiting</span></h2>
     ${upcoming.length ? `<ol class="q">${upcoming.slice(0, 6).map(li).join('')}</ol>${upcoming.length > 6 ? `<p class="msg">+ ${upcoming.length - 6} more in match order</p>` : ''}` : '<p class="msg">No more matches waiting.</p>'}

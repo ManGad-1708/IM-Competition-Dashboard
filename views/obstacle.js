@@ -23,6 +23,17 @@
   ctx.arenaTag = (m, team) => { const a = ctx.arenaOf(m, team); return a ? `<span class="tag ${a}" title="${a[0].toUpperCase() + a.slice(1)} arena">${a.toUpperCase()}</span>` : ''; };
   ctx.matchTime = m => (m && m.time) || '';
 
+  /** A Round 2 slot still waiting for a redo winner ("W-Q1"). */
+  ctx.slotName = slot => 'Winner of Qual. match ' + String(slot).slice(1) + ' redo';
+  /** Matches in the order they are played: Round 2 interleaves the qualifying redo. */
+  ctx.lineFor = st => (st.host && ctx.B.S[st.host].status !== 'locked' ? ctx.B.S[st.host] : st);
+  ctx.matchTitle = m => 'Match ' + m.no;
+  ctx.matchShort = m => (m.stage === 'QR' ? 'Q' + m.no : 'M' + m.no);
+  /** Names of both sides of a match, with a placeholder for a slot not filled yet. */
+  ctx.sides = (m, sep) => [['a', 'A'], ['b', 'B']].map(([k, K]) => m[k]
+    ? `<span class="qn">${ctx.tag(m[k])} ${esc(ctx.tname(m[k]))}${ctx.arenaTag(m, m[k]) ? ' ' + ctx.arenaTag(m, m[k]) : ''}</span>`
+    : m['slot' + K] ? `<i class="slot">${esc(ctx.slotName(m['slot' + K]))}</i>` : '').filter(Boolean).join(sep);
+
   /** One short status word per team in a stage. */
   ctx.result = (st, team) => {
     const r = ctx.runOf(st.id, team);
